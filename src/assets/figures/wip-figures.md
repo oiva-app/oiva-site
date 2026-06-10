@@ -7,11 +7,20 @@ Why not just drop the numbers and use filenames only?
 1. For the same reason that SKU's were invented.  It's helpful to have a short, unambiguous serial number for every graphic
 2. It's helpful to be able to view related files next to each other in the file explorer, when sorted alphabetically
 
+### Aspect Ratio
+Diagrams are drawn with a phone screen in mind.  Ideally they'll be small enough to be viewable on a phone screen, although some diagrams will require some pinch and zooming.
+
+### Viewability
+Keep in mind that wiewing images on Google Docs is more difficult than on a well-designed webpage.
+
+Pinch and zoom on a website is pretty easy on all phones (I think?), but for larger diagrams, We can also potentially give desktop users more viewing options with a javascript lightbox: e.g. click the image to open the lightbox, scroll to zoom, drag to pan around, escape or click-away to return to exit the lightbox
+
 ### Production Process
 About the diagrams and diagramming process
 ![](000-meta/001-process.excalidraw.svg)
 
 ### Formatting / presentation ideas
+Some ideas for presenting multiple images
 ![050-alternatives-presentation.excalidraw|455](000-meta/050-alternatives-presentation.excalidraw.svg)
 ## overview
 
@@ -26,6 +35,7 @@ Our current implementation
 ![102-overall-design-w-vendors.excalidraw](100-intro/102-overall-design-w-vendors.excalidraw.svg)
 
 ## The problem
+![310-before](300-problem/310-before-and-after/310-before.png)
 
 ![301-overwhelm](300-problem/301-overwhelm/301-overwhelm.png)
 
@@ -33,19 +43,7 @@ Our current implementation
 
 ![310-modern-observability-dashboard](300-problem/325-modern-observability-dashboard.png)
 
-## System Archtecture
-
-### Simplified Architecture
-TBD - based on what is needed by the Case Study text.  These diagrams will be somewhere between these two extremes:
-- [101-overall-design.excalidraw](100-intro/101-overall-design.excalidraw.svg)
-- [690-final-infra.excalidraw](600-infra/690-final-infra.excalidraw.svg)
-
-### Full Architecture
-Here's the full diagram, with all the gory details.  Simplified diagrams will be created as necessary for clear communication.
-
-Idea: animate from least complex to most complex?
-![Full diagram](600-infra/690-final-infra.excalidraw.svg)
-
+![311-after](300-problem/310-before-and-after/311-after.png)
 
 ## Agent Architecture
 
@@ -87,5 +85,19 @@ After:
 
 
 
+
+
+## System Archtecture
+
+### Simplified Architecture
+TBD - based on what is needed by the Case Study text.  These diagrams will be somewhere between these two extremes:
+- [101-overall-design.excalidraw](100-intro/101-overall-design.excalidraw.svg)
+- [690-final-infra.excalidraw](600-infra/690-final-infra.excalidraw.svg)
+
+### Full Architecture
+Here's the full diagram, with all the gory details.  Simplified diagrams will be created as necessary for clear communication.
+
+Idea: animate from least complex to most complex?
+![Full diagram](600-infra/690-final-infra.excalidraw.svg)
 
 
