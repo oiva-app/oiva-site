@@ -20,8 +20,12 @@ const {
 const pathname = Astro.url.pathname;
 const sectionTitle = section ? sectionTitles[section] : undefined;
 
+function normalizePath(path: string) {
+  return path === "/" ? path : path.replace(/\/$/, "");
+}
+
 function isActive(match: string) {
-  return pathname.startsWith(match);
+  return normalizePath(pathname).startsWith(normalizePath(match));
 }
 ---
 
