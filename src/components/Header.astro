@@ -25,7 +25,10 @@ function normalizePath(path: string) {
 }
 
 function isActive(match: string) {
-  return normalizePath(pathname).startsWith(normalizePath(match));
+  const currentPath = normalizePath(pathname);
+  const matchPath = normalizePath(match);
+
+  return currentPath === matchPath || currentPath.startsWith(`${matchPath}/`);
 }
 ---
 
