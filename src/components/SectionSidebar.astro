@@ -15,27 +15,26 @@ const { title, pages, currentPageId, headings } = Astro.props;
   <nav aria-label={`${title} pages`}>
     <p class="sidebar-title">{title}</p>
     {pages.map((page) => (
-      <a class="page-link" href={page.href} aria-current={page.id === currentPageId ? "page" : undefined}>
-        {page.label}
-      </a>
+      <div class="page-nav-item">
+        <a class="page-link" href={page.href} aria-current={page.id === currentPageId ? "page" : undefined}>
+          {page.label}
+        </a>
+        {page.id === currentPageId && headings.length > 0 && (
+          <div class="page-headings" aria-label={`${page.label} headings`}>
+            {headings.map((heading) => (
+              <a class="heading-link" href={`#${heading.slug}`}>{heading.text}</a>
+            ))}
+          </div>
+        )}
+      </div>
     ))}
   </nav>
-
-  {headings.length > 0 && (
-    <nav class="heading-links" aria-label="On this page">
-      <p class="sidebar-title">On this page</p>
-      {headings.map((heading) => (
-        <a href={`#${heading.slug}`}>{heading.text}</a>
-      ))}
-    </nav>
-  )}
 </aside>
 
 <style>
   .section-sidebar {
     align-self: start;
     display: grid;
-    gap: 1.75rem;
     max-height: calc(100vh - 6rem);
     overflow: auto;
     position: sticky;
@@ -55,9 +54,16 @@ const { title, pages, currentPageId, headings } = Astro.props;
     text-transform: uppercase;
   }
 
+  .page-nav-item {
+    display: grid;
+    gap: 0.125rem;
+    min-width: 0;
+  }
+
   a {
     border-radius: var(--radius-sm);
     color: var(--color-muted);
+    display: block;
     font-size: 0.94rem;
     font-weight: 600;
     line-height: 1.35;
@@ -71,13 +77,24 @@ const { title, pages, currentPageId, headings } = Astro.props;
     color: var(--color-text);
   }
 
-  .heading-links {
-    border-top: 1px solid var(--color-border);
-    padding-top: 1.25rem;
+  .page-headings {
+    display: grid;
+    gap: 0.05rem;
+    margin: 0 0 0.45rem 0.95rem;
+    min-width: 0;
   }
 
-  .heading-links a {
-    font-size: 0.88rem;
+  .heading-link {
+    border-radius: calc(var(--radius-sm) * 0.75);
+    color: var(--color-muted);
+    font-size: 0.84rem;
+    font-weight: 600;
+    padding: 0.28rem 0.45rem;
+  }
+
+  .heading-link:hover {
+    background: var(--color-surface);
+    color: var(--color-text);
   }
 
   @media (max-width: 900px) {

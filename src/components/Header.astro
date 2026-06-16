@@ -84,18 +84,18 @@ function isActive(match: string) {
       <nav class="mobile-section-nav" aria-label={`${sectionTitle} navigation`}>
         <p>{sectionTitle}</p>
         {sectionPages.map((page) => (
-          <a href={page.href} aria-current={page.id === currentPageId ? "page" : undefined}>
-            {page.label}
-          </a>
-        ))}
-      </nav>
-    )}
-
-    {headings.length > 0 && (
-      <nav class="mobile-heading-nav" aria-label="Page headings">
-        <p>On this page</p>
-        {headings.map((heading) => (
-          <a href={`#${heading.slug}`}>{heading.text}</a>
+          <div class="mobile-page-nav-item">
+            <a href={page.href} aria-current={page.id === currentPageId ? "page" : undefined}>
+              {page.label}
+            </a>
+            {page.id === currentPageId && headings.length > 0 && (
+              <div class="mobile-page-headings" aria-label={`${page.label} headings`}>
+                {headings.map((heading) => (
+                  <a class="mobile-heading-link" href={`#${heading.slug}`}>{heading.text}</a>
+                ))}
+              </div>
+            )}
+          </div>
         ))}
       </nav>
     )}
@@ -233,20 +233,42 @@ function isActive(match: string) {
     padding-top: 1rem;
   }
 
-  .mobile-section-nav,
-  .mobile-heading-nav {
+  .mobile-section-nav {
     border-top: 1px solid var(--color-border);
     margin-top: 1rem;
     padding-top: 1rem;
   }
 
-  .mobile-section-nav p,
-  .mobile-heading-nav p {
+  .mobile-section-nav p {
     color: var(--color-muted);
     font-size: 0.8rem;
     font-weight: 700;
     margin: 0 0 0.375rem;
     text-transform: uppercase;
+  }
+
+  .mobile-page-nav-item {
+    display: grid;
+    gap: 0.125rem;
+    min-width: 0;
+  }
+
+  .mobile-page-headings {
+    display: grid;
+    gap: 0.05rem;
+    margin: 0 0 0.45rem 0.95rem;
+    min-width: 0;
+  }
+
+  .mobile-menu .mobile-heading-link {
+    border-radius: calc(var(--radius-sm) * 0.75);
+    font-size: 0.9rem;
+    padding: 0.35rem 0.5rem;
+  }
+
+  .mobile-menu .mobile-heading-link:hover {
+    background: var(--color-surface);
+    color: var(--color-text);
   }
 
   @media (max-width: 780px) {
