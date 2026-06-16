@@ -90,7 +90,6 @@ Each MDX file starts with frontmatter. Frontmatter is the data between the `---`
 ---
 title: "Page Title"
 description: "Short page description."
-section: "Case Study"
 order: 3
 sidebarLabel: "Short Label"
 ---
@@ -104,7 +103,6 @@ The frontmatter fields are validated in `src/content.config.ts`.
 | --- | --- | --- |
 | `title` | Yes | The page heading, browser title, and page metadata. |
 | `description` | Yes | The intro text below the page heading and metadata description. |
-| `section` | Yes | Human-readable section label, such as `"Case Study"` or `"Getting Started"`. |
 | `order` | Yes | Sidebar order and previous/next page order. Lower numbers appear first. |
 | `sidebarLabel` | No | Shorter label for the sidebar. If omitted, the sidebar uses `title`. |
 
@@ -126,7 +124,6 @@ To use a figure in an MDX page, import both the image and the `FigureImage` comp
 ---
 title: "Demo Walkthrough"
 description: "How the Oiva demo works."
-section: "Case Study"
 order: 5
 ---
 
@@ -144,7 +141,7 @@ import workflowImage from "../../assets/figures/700-agent/710-oiva-overview.exca
 
 Use clear `alt` text that describes the image for someone who cannot see it. Use `caption` when the page needs visible context under the figure.
 
-`FigureImage` also supports an optional `sourceLabel` and `sourceUrl` if the full-size link should point somewhere other than the image file.
+`FigureImage` also supports an optional `sourceUrl` if the full-size link should point somewhere other than the image file.
 
 ## Changing the Logo
 
