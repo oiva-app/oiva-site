@@ -87,15 +87,15 @@ const { class: className = "" } = Astro.props;
     width: 1.125rem;
   }
 
-  .theme-icon-moon {
-    display: none;
-  }
-
-  :global([data-theme="dark"]) .theme-icon-sun {
+  .theme-icon-sun {
     display: none;
   }
 
   :global([data-theme="dark"]) .theme-icon-moon {
+    display: none;
+  }
+
+  :global([data-theme="dark"]) .theme-icon-sun {
     display: block;
   }
 </style>
