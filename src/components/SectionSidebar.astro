@@ -52,6 +52,7 @@ const { title, pages, currentPageId } = Astro.props;
   const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
   let isNavigating = false;
   let navigationLockFallbackTimer: number | undefined;
+  let pendingSidebarNavigationTimer: number | undefined;
 
   const getPendingSectionNavigation = () => {
     try {
@@ -77,8 +78,16 @@ const { title, pages, currentPageId } = Astro.props;
     }
   };
 
+  const clearPendingSidebarNavigation = () => {
+    if (pendingSidebarNavigationTimer !== undefined) {
+      window.clearTimeout(pendingSidebarNavigationTimer);
+      pendingSidebarNavigationTimer = undefined;
+    }
+  };
+
   const releaseSidebarNavigationLock = () => {
     isNavigating = false;
+    clearPendingSidebarNavigation();
 
     if (navigationLockFallbackTimer !== undefined) {
       window.clearTimeout(navigationLockFallbackTimer);
@@ -242,7 +251,9 @@ const { title, pages, currentPageId } = Astro.props;
           }
         });
 
-        window.setTimeout(() => {
+        pendingSidebarNavigationTimer = window.setTimeout(() => {
+          pendingSidebarNavigationTimer = undefined;
+
           try {
             navigate(link.href, { sourceElement: link });
           } catch (error) {
