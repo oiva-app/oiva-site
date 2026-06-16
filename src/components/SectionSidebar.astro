@@ -49,6 +49,7 @@ const { title, pages, currentPageId } = Astro.props;
   const accordionNavigationDelay = 360;
   const pendingNavigationStorageKey = "oiva-section-navigation-pending";
   const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+  let isNavigating = false;
 
   const getPendingSectionNavigation = () => {
     try {
@@ -156,8 +157,8 @@ const { title, pages, currentPageId } = Astro.props;
   };
 
   const initializeSectionAccordions = () => {
+    isNavigating = false;
     const shouldAnimateIncoming = getPendingSectionNavigation();
-    let didScheduleIncomingAnimation = false;
 
     document.querySelectorAll<HTMLElement>("[data-section-accordion]").forEach((accordion) => {
       const currentPageId = accordion.dataset.currentPage;
@@ -170,7 +171,6 @@ const { title, pages, currentPageId } = Astro.props;
 
         if (shouldAnimateIncoming && isDesktopSidebar && isCurrent) {
           animateIncomingPanel(panel);
-          didScheduleIncomingAnimation = true;
           return;
         }
 
@@ -203,6 +203,12 @@ const { title, pages, currentPageId } = Astro.props;
         }
 
         event.preventDefault();
+
+        if (isNavigating) {
+          return;
+        }
+
+        isNavigating = true;
         setPendingSectionNavigation();
 
         panels.forEach((panel) => {
