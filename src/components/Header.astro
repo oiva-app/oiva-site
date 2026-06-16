@@ -146,6 +146,14 @@ function isActive(match: string) {
       button.setAttribute("aria-label", "Close navigation menu");
       menu.removeAttribute("hidden");
     });
+
+    menu.addEventListener("click", (event) => {
+      const target = event.target;
+
+      if (target instanceof Element && target.closest("a")) {
+        closeCurrentMobileMenu();
+      }
+    });
   };
 
   initializeMobileMenu();
