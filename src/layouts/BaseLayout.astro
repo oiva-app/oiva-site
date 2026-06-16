@@ -7,6 +7,7 @@ import type { HeadingLink, SectionKey, SectionPage } from "../lib/content";
 type Props = {
   title?: string;
   description?: string;
+  bareTitle?: boolean;
   section?: SectionKey;
   sectionPages?: SectionPage[];
   currentPageId?: string;
@@ -16,12 +17,13 @@ type Props = {
 const {
   title = "Oiva",
   description = "Oiva is an open-source, self-hosted service for AI-assisted incident investigation.",
+  bareTitle = false,
   section,
   sectionPages = [],
   currentPageId,
   headings = [],
 } = Astro.props;
-const pageTitle = title === "Oiva" ? title : `${title} | Oiva`;
+const pageTitle = bareTitle ? title : `${title} | Oiva`;
 ---
 
 <html lang="en">
