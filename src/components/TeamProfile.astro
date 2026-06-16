@@ -15,9 +15,9 @@ const emailHref = member.emailUrl?.startsWith("mailto:")
 ---
 
 <article class="team-profile">
-  <div class="avatar" aria-hidden={member.headshot ? undefined : "true"}>
+  <div class="avatar" aria-hidden="true">
     {member.headshot ? (
-      <Image src={member.headshot} alt={`${member.name} profile photo`} />
+      <Image src={member.headshot} alt="" width={224} height={224} />
     ) : (
       member.initials
     )}
