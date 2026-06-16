@@ -175,10 +175,13 @@ Team profile data lives in `src/data/team.ts`.
 Each team member has this shape:
 
 ```ts
+import janeHeadshot from "../assets/team/jane-doe.jpg";
+
 {
   name: "Jane Doe",
   location: "City, Region, Country",
   initials: "JD",
+  headshot: janeHeadshot,
   githubUrl: "https://github.com/example",
   linkedinUrl: "https://www.linkedin.com/in/example/",
 }
@@ -192,11 +195,16 @@ Required fields:
 
 Optional fields:
 
+- `headshot`
 - `emailUrl`
 - `githubUrl`
 - `linkedinUrl`
 
-The team page currently renders initials-based avatar circles, not headshots. If headshots are added later, `src/components/TeamProfile.astro` and the `TeamMember` type in `src/data/team.ts` will need to be updated.
+Profile photos should live in `src/assets/team/` and be imported into `src/data/team.ts`. Use predictable lowercase filenames such as `jane-doe.jpg` or `jane-doe.png`.
+
+`headshot` should be a local imported image, not a LinkedIn-hosted image URL. Local images let Astro optimize the file and avoid broken hotlinks if LinkedIn changes or expires its CDN URLs.
+
+The team page renders a circular optimized image when `headshot` is present. If `headshot` is omitted, `src/components/TeamProfile.astro` falls back to the member's initials in a circular avatar.
 
 ## Updating Navigation and Links
 
