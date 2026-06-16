@@ -5,7 +5,6 @@ import { z } from "astro/zod";
 const pageSchema = z.object({
   title: z.string(),
   description: z.string(),
-  section: z.string(),
   order: z.number(),
   sidebarLabel: z.string().optional(),
 });
