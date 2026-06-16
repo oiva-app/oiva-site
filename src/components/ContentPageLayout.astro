@@ -45,12 +45,12 @@ const hasPager = Boolean(previous || next);
 
       {hasPager && (
         <nav class="pager" aria-label="Previous and next pages">
-          {previous ? (
+          {previous && (
             <a class="pager-link" href={previous.href}>
               <span>Previous</span>
               <strong>{previous.label}</strong>
             </a>
-          ) : <span></span>}
+          )}
 
           {next && (
             <a class="pager-link pager-link-next" href={next.href}>
@@ -124,6 +124,7 @@ const hasPager = Boolean(previous || next);
   }
 
   .pager-link-next {
+    grid-column: 2;
     text-align: right;
   }
 
@@ -138,6 +139,7 @@ const hasPager = Boolean(previous || next);
     }
 
     .pager-link-next {
+      grid-column: auto;
       text-align: left;
     }
   }
