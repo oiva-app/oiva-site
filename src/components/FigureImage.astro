@@ -11,7 +11,7 @@ type Props = {
 
 const { src, alt, caption, sourceLabel = "Open full size", sourceUrl } = Astro.props;
 const fullSizeHref = sourceUrl ?? (typeof src === "string" ? src : src.src);
-const isSvg = typeof src !== "string" && src.src.endsWith(".svg");
+const isSvg = typeof src !== "string" && src.format === "svg";
 ---
 
 <figure>
