@@ -38,11 +38,19 @@ const pageTitle = title === "Oiva" ? title : `${title} | Oiva`;
     <title>{pageTitle}</title>
     <script is:inline>
       (() => {
-        const storedTheme = localStorage.getItem("theme");
-        const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
-          ? "dark"
-          : "light";
-        document.documentElement.dataset.theme = storedTheme || systemTheme;
+        const getSystemTheme = () =>
+          window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+
+        let storedTheme = null;
+
+        try {
+          const theme = localStorage.getItem("theme");
+          storedTheme = theme === "dark" || theme === "light" ? theme : null;
+        } catch {
+          // Ignore unavailable storage.
+        }
+
+        document.documentElement.dataset.theme = storedTheme || getSystemTheme();
       })();
     </script>
   </head>
