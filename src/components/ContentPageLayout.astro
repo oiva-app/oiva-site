@@ -4,7 +4,6 @@ import SectionSidebar from "./SectionSidebar.astro";
 import {
   getAdjacentPages,
   sectionTitles,
-  type HeadingLink,
   type SectionKey,
   type SectionPage,
 } from "../lib/content";
@@ -15,10 +14,9 @@ type Props = {
   description: string;
   currentPageId: string;
   pages: SectionPage[];
-  headings: HeadingLink[];
 };
 
-const { section, title, description, currentPageId, pages, headings } = Astro.props;
+const { section, title, description, currentPageId, pages } = Astro.props;
 const sectionTitle = sectionTitles[section];
 const { previous, next } = getAdjacentPages(pages, currentPageId);
 const hasPager = Boolean(previous || next);
@@ -30,10 +28,9 @@ const hasPager = Boolean(previous || next);
   section={section}
   sectionPages={pages}
   currentPageId={currentPageId}
-  headings={headings}
 >
   <div class="content-shell">
-    <SectionSidebar title={sectionTitle} pages={pages} currentPageId={currentPageId} headings={headings} />
+    <SectionSidebar title={sectionTitle} pages={pages} currentPageId={currentPageId} />
 
     <article class="content-article">
       <p class="eyebrow">{sectionTitle}</p>

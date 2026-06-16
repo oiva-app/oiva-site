@@ -2,7 +2,8 @@
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import "../styles/global.css";
-import type { HeadingLink, SectionKey, SectionPage } from "../lib/content";
+import { ClientRouter } from "astro:transitions";
+import type { SectionKey, SectionPage } from "../lib/content";
 
 type Props = {
   title?: string;
@@ -11,7 +12,6 @@ type Props = {
   section?: SectionKey;
   sectionPages?: SectionPage[];
   currentPageId?: string;
-  headings?: HeadingLink[];
 };
 
 const {
@@ -21,7 +21,6 @@ const {
   section,
   sectionPages = [],
   currentPageId,
-  headings = [],
 } = Astro.props;
 const pageTitle = bareTitle ? title : `${title} | Oiva`;
 ---
@@ -38,6 +37,7 @@ const pageTitle = bareTitle ? title : `${title} | Oiva`;
     <meta property="og:type" content="website" />
     <meta name="generator" content={Astro.generator} />
     <title>{pageTitle}</title>
+    <ClientRouter />
     <script is:inline>
       (() => {
         const getSystemTheme = () =>
@@ -61,7 +61,6 @@ const pageTitle = bareTitle ? title : `${title} | Oiva`;
       section={section}
       sectionPages={sectionPages}
       currentPageId={currentPageId}
-      headings={headings}
     />
     <main>
       <slot />

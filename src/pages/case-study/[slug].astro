@@ -3,8 +3,7 @@ import { render, type CollectionEntry } from "astro:content";
 import ContentPageLayout from "../../components/ContentPageLayout.astro";
 import {
   getSectionEntries,
-  mapSectionPages,
-  toHeadingLinks,
+  mapSectionPagesWithHeadings,
 } from "../../lib/content";
 
 export async function getStaticPaths() {
@@ -22,9 +21,8 @@ type Props = {
 };
 
 const { entry, entries } = Astro.props;
-const { Content, headings } = await render(entry);
-const pages = mapSectionPages("caseStudy", entries);
-const headingLinks = toHeadingLinks(headings);
+const { Content } = await render(entry);
+const pages = await mapSectionPagesWithHeadings("caseStudy", entries);
 ---
 
 <ContentPageLayout
@@ -33,7 +31,6 @@ const headingLinks = toHeadingLinks(headings);
   description={entry.data.description}
   currentPageId={entry.id}
   pages={pages}
-  headings={headingLinks}
 >
   <Content />
 </ContentPageLayout>

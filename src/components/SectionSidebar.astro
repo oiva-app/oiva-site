@@ -1,27 +1,37 @@
 ---
-import type { HeadingLink, SectionPage } from "../lib/content";
+import type { SectionPage } from "../lib/content";
 
 type Props = {
   title: string;
   pages: SectionPage[];
   currentPageId: string;
-  headings: HeadingLink[];
 };
 
-const { title, pages, currentPageId, headings } = Astro.props;
+const { title, pages, currentPageId } = Astro.props;
 ---
 
-<aside class="section-sidebar">
+<aside class="section-sidebar" data-section-accordion data-current-page={currentPageId}>
   <nav aria-label={`${title} pages`}>
     <p class="sidebar-title">{title}</p>
     {pages.map((page) => (
-      <div class="page-nav-item">
-        <a class="page-link" href={page.href} aria-current={page.id === currentPageId ? "page" : undefined}>
+      <div class="page-nav-item" data-page-id={page.id}>
+        <a
+          class="page-link"
+          href={page.href}
+          aria-current={page.id === currentPageId ? "page" : undefined}
+          data-section-page-link
+        >
           {page.label}
         </a>
-        {page.id === currentPageId && headings.length > 0 && (
-          <div class="page-headings" aria-label={`${page.label} headings`}>
-            {headings.map((heading) => (
+        {page.headings.length > 0 && (
+          <div
+            class="page-headings"
+            aria-label={`${page.label} headings`}
+            aria-hidden={page.id === currentPageId ? "false" : "true"}
+            data-open={page.id === currentPageId ? "true" : "false"}
+            data-heading-panel
+          >
+            {page.headings.map((heading) => (
               <a class="heading-link" href={`#${heading.slug}`}>{heading.text}</a>
             ))}
           </div>
@@ -30,6 +40,106 @@ const { title, pages, currentPageId, headings } = Astro.props;
     ))}
   </nav>
 </aside>
+
+<script>
+  type PanelElement = HTMLElement & { dataset: DOMStringMap };
+
+  const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  const setPanelOpen = (
+    panel: PanelElement,
+    isOpen: boolean,
+    animate: boolean,
+    openFromCollapsed = false,
+  ) => {
+    panel.dataset.open = isOpen ? "true" : "false";
+    panel.setAttribute("aria-hidden", isOpen ? "false" : "true");
+
+    if (reducedMotionQuery.matches || !animate) {
+      panel.style.height = isOpen ? "auto" : "0px";
+      return;
+    }
+
+    const startHeight = openFromCollapsed ? 0 : panel.offsetHeight;
+    const endHeight = isOpen ? panel.scrollHeight : 0;
+
+    panel.style.height = `${startHeight}px`;
+
+    requestAnimationFrame(() => {
+      panel.style.height = `${endHeight}px`;
+    });
+
+    const finishTransition = (event: TransitionEvent) => {
+      if (event.propertyName !== "height") {
+        return;
+      }
+
+      panel.removeEventListener("transitionend", finishTransition);
+
+      if (isOpen) {
+        panel.style.height = "auto";
+      }
+    };
+
+    panel.addEventListener("transitionend", finishTransition);
+  };
+
+  const initializeSectionAccordions = () => {
+    const shouldAnimateIncoming = document.documentElement.dataset.sectionNavigationPending === "true";
+
+    document.querySelectorAll<HTMLElement>("[data-section-accordion]").forEach((accordion) => {
+      const currentPageId = accordion.dataset.currentPage;
+      const panels = accordion.querySelectorAll<PanelElement>("[data-heading-panel]");
+
+      panels.forEach((panel) => {
+        const item = panel.closest<HTMLElement>("[data-page-id]");
+        const isCurrent = item?.dataset.pageId === currentPageId;
+        setPanelOpen(
+          panel,
+          isCurrent,
+          accordion.dataset.accordionReady === "true" || shouldAnimateIncoming,
+          shouldAnimateIncoming && isCurrent,
+        );
+      });
+
+      if (accordion.dataset.accordionReady === "true") {
+        return;
+      }
+
+      accordion.dataset.accordionReady = "true";
+
+      accordion.addEventListener("click", (event) => {
+        const target = event.target;
+        const link = target instanceof Element
+          ? target.closest<HTMLAnchorElement>("[data-section-page-link]")
+          : null;
+
+        if (!link || link.getAttribute("aria-current") === "page" || event.defaultPrevented) {
+          return;
+        }
+
+        document.documentElement.dataset.sectionNavigationPending = "true";
+
+        panels.forEach((panel) => {
+          if (panel.dataset.open === "true") {
+            setPanelOpen(panel, false, true);
+          }
+        });
+      });
+    });
+
+    if (shouldAnimateIncoming) {
+      delete document.documentElement.dataset.sectionNavigationPending;
+    }
+  };
+
+  initializeSectionAccordions();
+
+  if (document.documentElement.dataset.sectionAccordionListenerReady !== "true") {
+    document.documentElement.dataset.sectionAccordionListenerReady = "true";
+    document.addEventListener("astro:page-load", initializeSectionAccordions);
+  }
+</script>
 
 <style>
   .section-sidebar {
@@ -82,6 +192,19 @@ const { title, pages, currentPageId, headings } = Astro.props;
     gap: 0.05rem;
     margin: 0 0 0.45rem 0.95rem;
     min-width: 0;
+    overflow: hidden;
+    transition: height 180ms ease, opacity 180ms ease;
+  }
+
+  .page-headings[data-open="false"] {
+    height: 0;
+    margin-bottom: 0;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .page-headings[data-open="true"] {
+    opacity: 1;
   }
 
   .heading-link {
@@ -100,6 +223,12 @@ const { title, pages, currentPageId, headings } = Astro.props;
   @media (max-width: 900px) {
     .section-sidebar {
       display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .page-headings {
+      transition: none;
     }
   }
 </style>

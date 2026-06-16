@@ -2,20 +2,18 @@
 import Logo from "./Logo.astro";
 import ThemeToggle from "./ThemeToggle.astro";
 import { githubUrl, navLinks } from "../data/navigation";
-import { sectionTitles, type HeadingLink, type SectionKey, type SectionPage } from "../lib/content";
+import { sectionTitles, type SectionKey, type SectionPage } from "../lib/content";
 
 type Props = {
   section?: SectionKey;
   sectionPages?: SectionPage[];
   currentPageId?: string;
-  headings?: HeadingLink[];
 };
 
 const {
   section,
   sectionPages = [],
   currentPageId,
-  headings = [],
 } = Astro.props;
 const pathname = Astro.url.pathname;
 const sectionTitle = section ? sectionTitles[section] : undefined;
@@ -76,16 +74,31 @@ function isActive(match: string) {
     </nav>
 
     {sectionTitle && sectionPages.length > 0 && (
-      <nav class="mobile-section-nav" aria-label={`${sectionTitle} navigation`}>
+      <nav
+        class="mobile-section-nav"
+        aria-label={`${sectionTitle} navigation`}
+        data-section-accordion
+        data-current-page={currentPageId}
+      >
         <p>{sectionTitle}</p>
         {sectionPages.map((page) => (
-          <div class="mobile-page-nav-item">
-            <a href={page.href} aria-current={page.id === currentPageId ? "page" : undefined}>
+          <div class="mobile-page-nav-item" data-page-id={page.id}>
+            <a
+              href={page.href}
+              aria-current={page.id === currentPageId ? "page" : undefined}
+              data-section-page-link
+            >
               {page.label}
             </a>
-            {page.id === currentPageId && headings.length > 0 && (
-              <div class="mobile-page-headings" aria-label={`${page.label} headings`}>
-                {headings.map((heading) => (
+            {page.headings.length > 0 && (
+              <div
+                class="mobile-page-headings"
+                aria-label={`${page.label} headings`}
+                aria-hidden={page.id === currentPageId ? "false" : "true"}
+                data-open={page.id === currentPageId ? "true" : "false"}
+                data-heading-panel
+              >
+                {page.headings.map((heading) => (
                   <a class="mobile-heading-link" href={`#${heading.slug}`}>{heading.text}</a>
                 ))}
               </div>
@@ -98,21 +111,34 @@ function isActive(match: string) {
 </header>
 
 <script>
-  const button = document.querySelector("[data-menu-button]");
-  const menu = document.querySelector("[data-mobile-menu]");
+  const closeCurrentMobileMenu = () => {
+    const button = document.querySelector<HTMLButtonElement>("[data-menu-button]");
+    const menu = document.querySelector<HTMLElement>("[data-mobile-menu]");
 
-  if (button && menu) {
-    const closeMenu = () => {
-      button.setAttribute("aria-expanded", "false");
-      button.setAttribute("aria-label", "Open navigation menu");
-      menu.setAttribute("hidden", "");
-    };
+    if (!button || !menu) {
+      return;
+    }
+
+    button.setAttribute("aria-expanded", "false");
+    button.setAttribute("aria-label", "Open navigation menu");
+    menu.setAttribute("hidden", "");
+  };
+
+  const initializeMobileMenu = () => {
+    const button = document.querySelector<HTMLButtonElement>("[data-menu-button]");
+    const menu = document.querySelector<HTMLElement>("[data-mobile-menu]");
+
+    if (!button || !menu || button.dataset.menuReady === "true") {
+      return;
+    }
+
+    button.dataset.menuReady = "true";
 
     button.addEventListener("click", () => {
       const isOpen = button.getAttribute("aria-expanded") === "true";
 
       if (isOpen) {
-        closeMenu();
+        closeCurrentMobileMenu();
         return;
       }
 
@@ -120,9 +146,18 @@ function isActive(match: string) {
       button.setAttribute("aria-label", "Close navigation menu");
       menu.removeAttribute("hidden");
     });
+  };
 
+  initializeMobileMenu();
+
+  if (document.documentElement.dataset.mobileMenuListenerReady !== "true") {
+    document.documentElement.dataset.mobileMenuListenerReady = "true";
+    document.addEventListener("astro:page-load", initializeMobileMenu);
     document.addEventListener("click", (event) => {
-      if (button.getAttribute("aria-expanded") !== "true") {
+      const button = document.querySelector<HTMLButtonElement>("[data-menu-button]");
+      const menu = document.querySelector<HTMLElement>("[data-mobile-menu]");
+
+      if (!button || !menu || button.getAttribute("aria-expanded") !== "true") {
         return;
       }
 
@@ -132,7 +167,7 @@ function isActive(match: string) {
         return;
       }
 
-      closeMenu();
+      closeCurrentMobileMenu();
     });
   }
 </script>
@@ -273,6 +308,19 @@ function isActive(match: string) {
     gap: 0.05rem;
     margin: 0 0 0.45rem 0.95rem;
     min-width: 0;
+    overflow: hidden;
+    transition: height 180ms ease, opacity 180ms ease;
+  }
+
+  .mobile-page-headings[data-open="false"] {
+    height: 0;
+    margin-bottom: 0;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .mobile-page-headings[data-open="true"] {
+    opacity: 1;
   }
 
   .mobile-menu .mobile-heading-link {
@@ -295,6 +343,12 @@ function isActive(match: string) {
 
     .menu-button {
       display: inline-flex;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mobile-page-headings {
+      transition: none;
     }
   }
 </style>
