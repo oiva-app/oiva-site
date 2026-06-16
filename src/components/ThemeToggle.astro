@@ -78,18 +78,19 @@ const { class: className = "" } = Astro.props;
   .theme-toggle {
     align-items: center;
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: 999px;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
     color: var(--color-text);
     cursor: pointer;
     display: inline-flex;
-    height: 2.25rem;
+    height: 2.35rem;
     justify-content: center;
-    width: 2.25rem;
+    width: 2.35rem;
   }
 
   .theme-toggle:hover {
-    background: var(--color-surface-strong);
+    background: var(--color-surface-raised);
+    border-color: var(--border-strong);
   }
 
   .theme-icon {

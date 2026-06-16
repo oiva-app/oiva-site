@@ -205,7 +205,7 @@ Profile photos should live in `src/assets/team/` and be imported into `src/data/
 `headshot` should be a local imported image, not a LinkedIn-hosted image URL. Local images let Astro optimize the file and avoid broken hotlinks if LinkedIn changes or expires its CDN URLs.
 
 The team page renders a circular optimized image when `headshot` is present. If `headshot` is omitted, `src/components/TeamProfile.astro` falls back to the member's initials in a circular avatar.
-
+1. wha
 ## Updating Navigation and Links
 
 Top-level navigation and the GitHub URL live in `src/data/navigation.ts`.

@@ -16,22 +16,22 @@ import { githubUrl } from "../data/navigation";
 
 <style>
   .site-footer {
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--border-subtle);
     margin-top: var(--space-section);
   }
 
   .site-footer-inner {
     align-items: center;
     display: flex;
-    gap: 1.25rem;
+    gap: var(--space-lg);
     justify-content: space-between;
     margin: 0 auto;
-    max-width: var(--container-wide);
-    padding: 1.5rem var(--space-page);
+    max-width: var(--container-page);
+    padding: var(--space-lg) var(--space-page);
   }
 
   p {
-    color: var(--color-muted);
+    color: var(--color-text-muted);
     margin: 0;
   }
 
@@ -41,7 +41,8 @@ import { githubUrl } from "../data/navigation";
   }
 
   a {
-    color: var(--color-muted);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
     font-weight: 600;
     text-decoration: none;
   }
