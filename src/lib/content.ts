@@ -1,5 +1,5 @@
 import type { CollectionEntry } from "astro:content";
-import { getCollection, render } from "astro:content";
+import { getCollection } from "astro:content";
 
 export type SectionKey = "caseStudy" | "gettingStarted";
 
@@ -54,27 +54,6 @@ export function mapSectionPages(
     order: entry.data.order,
     headings: [],
   }));
-}
-
-export async function mapSectionPagesWithHeadings(
-  section: SectionKey,
-  entries: CollectionEntry<SectionKey>[],
-): Promise<SectionPage[]> {
-  return Promise.all(
-    entries.map(async (entry) => {
-      const { headings } = await render(entry);
-
-      return {
-        href: `${sectionBasePath[section]}/${entry.id}/`,
-        label: entry.data.sidebarLabel ?? entry.data.title,
-        title: entry.data.title,
-        description: entry.data.description,
-        id: entry.id,
-        order: entry.data.order,
-        headings: toHeadingLinks(headings),
-      };
-    }),
-  );
 }
 
 export function getAdjacentPages(pages: SectionPage[], currentId: string) {

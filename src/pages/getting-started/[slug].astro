@@ -3,13 +3,14 @@ import { render, type CollectionEntry } from "astro:content";
 import ContentPageLayout from "../../components/ContentPageLayout.astro";
 import {
   getSectionEntries,
-  mapSectionPagesWithHeadings,
+  mapSectionPages,
+  toHeadingLinks,
   type SectionPage,
 } from "../../lib/content";
 
 export async function getStaticPaths() {
   const entries = await getSectionEntries("gettingStarted");
-  const pages = await mapSectionPagesWithHeadings("gettingStarted", entries);
+  const pages = mapSectionPages("gettingStarted", entries);
 
   return entries.map((entry) => ({
     params: { slug: entry.id },
@@ -23,7 +24,10 @@ type Props = {
 };
 
 const { entry, pages } = Astro.props;
-const { Content } = await render(entry);
+const { Content, headings } = await render(entry);
+const pagesWithCurrentHeadings = pages.map((page) => page.id === entry.id
+  ? { ...page, headings: toHeadingLinks(headings) }
+  : page);
 ---
 
 <ContentPageLayout
@@ -31,7 +35,7 @@ const { Content } = await render(entry);
   title={entry.data.title}
   description={entry.data.description}
   currentPageId={entry.id}
-  pages={pages}
+  pages={pagesWithCurrentHeadings}
 >
   <Content />
 </ContentPageLayout>
