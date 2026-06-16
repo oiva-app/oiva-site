@@ -79,8 +79,10 @@ const { title, pages, currentPageId } = Astro.props;
     try {
       sessionStorage.removeItem(pendingNavigationStorageKey);
     } catch {
-      delete document.documentElement.dataset.sectionNavigationPending;
+      // Ignore unavailable storage.
     }
+
+    delete document.documentElement.dataset.sectionNavigationPending;
   };
 
   const clearPendingSidebarNavigation = () => {
