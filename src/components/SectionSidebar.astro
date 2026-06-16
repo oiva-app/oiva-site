@@ -218,7 +218,7 @@ const { title, pages, currentPageId } = Astro.props;
       });
     });
 
-    if (shouldAnimateIncoming && didScheduleIncomingAnimation) {
+    if (shouldAnimateIncoming) {
       clearPendingSectionNavigation();
     }
   };
