@@ -44,19 +44,34 @@ const { class: className = "" } = Astro.props;
     });
   };
 
-  applyTheme(getStoredTheme() || getSystemTheme());
+  const initializeThemeToggles = () => {
+    applyTheme(getStoredTheme() || getSystemTheme());
 
-  document.querySelectorAll("[data-theme-toggle]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
-      try {
-        localStorage.setItem("theme", nextTheme);
-      } catch {
-        // Theme still applies for the current page view when storage is unavailable.
+    document.querySelectorAll<HTMLButtonElement>("[data-theme-toggle]").forEach((button) => {
+      if (button.dataset.themeReady === "true") {
+        return;
       }
-      applyTheme(nextTheme);
+
+      button.dataset.themeReady = "true";
+
+      button.addEventListener("click", () => {
+        const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+        try {
+          localStorage.setItem("theme", nextTheme);
+        } catch {
+          // Theme still applies for the current page view when storage is unavailable.
+        }
+        applyTheme(nextTheme);
+      });
     });
-  });
+  };
+
+  initializeThemeToggles();
+
+  if (document.documentElement.dataset.themeToggleListenerReady !== "true") {
+    document.documentElement.dataset.themeToggleListenerReady = "true";
+    document.addEventListener("astro:page-load", initializeThemeToggles);
+  }
 </script>
 
 <style>
