@@ -20,7 +20,7 @@ const { section, title, description, currentPageId, pages } = Astro.props;
 const sectionTitle = sectionTitles[section];
 const { previous, next } = getAdjacentPages(pages, currentPageId);
 const hasPager = Boolean(previous || next);
-const isCaseStudy = section === "caseStudy";
+const usesFramedContentLayout = section === "caseStudy" || section === "gettingStarted";
 ---
 
 <BaseLayout
@@ -30,7 +30,7 @@ const isCaseStudy = section === "caseStudy";
   sectionPages={pages}
   currentPageId={currentPageId}
 >
-  <div class:list={["content-shell", isCaseStudy && "content-shell-case-study"]} data-section={section}>
+  <div class:list={["content-shell", usesFramedContentLayout && "content-shell-framed"]} data-section={section}>
     <SectionSidebar title={sectionTitle} pages={pages} currentPageId={currentPageId} />
 
     <article class="content-article">
@@ -84,14 +84,14 @@ const isCaseStudy = section === "caseStudy";
     z-index: 1;
   }
 
-  .content-shell-case-study {
+  .content-shell-framed {
     gap: var(--space-xl);
     grid-template-columns: minmax(13rem, var(--sidebar-width)) minmax(0, 1fr);
     max-width: 1520px;
     min-height: calc(100vh - var(--header-height));
   }
 
-  .content-shell-case-study .content-article {
+  .content-shell-framed .content-article {
     background: var(--color-surface);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-lg);
@@ -99,7 +99,7 @@ const isCaseStudy = section === "caseStudy";
     padding: var(--space-2xl);
   }
 
-  .content-shell-case-study .prose {
+  .content-shell-framed .prose {
     max-width: none;
     width: 100%;
   }
@@ -163,7 +163,7 @@ const isCaseStudy = section === "caseStudy";
       padding-top: var(--space-xl);
     }
 
-    .content-shell-case-study .content-article {
+    .content-shell-framed .content-article {
       padding: var(--space-lg);
     }
 

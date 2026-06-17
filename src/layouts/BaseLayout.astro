@@ -1,7 +1,7 @@
 ---
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
-import CaseStudyAtlasBackground from "../components/CaseStudyAtlasBackground.astro";
+import ContentPageHillsBackground from "../components/ContentPageHillsBackground.astro";
 import "../styles/global.css";
 import { ClientRouter } from "astro:transitions";
 import type { SectionKey, SectionPage } from "../lib/content";
@@ -24,7 +24,7 @@ const {
   currentPageId,
 } = Astro.props;
 const pageTitle = bareTitle ? title : `${title} | Oiva`;
-const isCaseStudy = section === "caseStudy";
+const hasContentPageBackground = section === "caseStudy" || section === "gettingStarted";
 ---
 
 <html lang="en" transition:animate="none">
@@ -75,8 +75,8 @@ const isCaseStudy = section === "caseStudy";
       sectionPages={sectionPages}
       currentPageId={currentPageId}
     />
-    <div class:list={["site-page", isCaseStudy && "site-page-case-study"]} data-section={section}>
-      {isCaseStudy && <CaseStudyAtlasBackground />}
+    <div class:list={["site-page", hasContentPageBackground && "site-page-content"]} data-section={section}>
+      {hasContentPageBackground && <ContentPageHillsBackground />}
       <main>
         <slot />
       </main>
@@ -90,12 +90,12 @@ const isCaseStudy = section === "caseStudy";
     position: relative;
   }
 
-  .site-page-case-study {
+  .site-page-content {
     overflow: hidden;
   }
 
-  .site-page-case-study main,
-  .site-page-case-study :global(.site-footer) {
+  .site-page-content main,
+  .site-page-content :global(.site-footer) {
     position: relative;
     z-index: 1;
   }
