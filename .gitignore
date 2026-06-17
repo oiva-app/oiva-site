@@ -1,3 +1,8 @@
+# IDEs
+.obsidian
+.trash
+.vscode
+
 # build output
 dist/
 # generated types
@@ -24,3 +29,4 @@ pnpm-debug.log*
 .idea/
 
 scratch-docs/
+scratch/
