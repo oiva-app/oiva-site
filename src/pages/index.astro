@@ -1,5 +1,6 @@
 ---
 import oivaBearLogo from "../assets/logo/oiva_bear_green.svg";
+import HomeHeroAtlasBackground from "../components/HomeHeroAtlasBackground.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 
 const description =
@@ -8,16 +9,21 @@ const description =
 
 <BaseLayout title="Oiva" bareTitle description={description}>
   <section class="home-hero" aria-labelledby="home-title">
-    <div class="home-hero__content">
-      <h1 id="home-title">Oiva</h1>
-      <p class="home-hero__summary">{description}</p>
-      <div class="button-row home-hero__actions" aria-label="Primary links">
-        <a class="button button-primary" href="/case-study/overview/">Case Study</a>
-        <a class="button button-secondary" href="/getting-started/overview/">Getting Started</a>
+    <HomeHeroAtlasBackground />
+    <div class="home-hero__inner">
+      <div class="home-hero__visual" aria-hidden="true">
+        <div class="home-hero__logo">
+          <img src={oivaBearLogo.src} alt="" loading="eager" decoding="async" />
+        </div>
       </div>
-    </div>
-    <div class="home-hero__logo" aria-hidden="true">
-      <img src={oivaBearLogo.src} alt="" loading="eager" decoding="async" />
+      <div class="home-hero__content">
+        <h1 id="home-title">Oiva</h1>
+        <p class="home-hero__summary">{description}</p>
+        <div class="button-row home-hero__actions" aria-label="Primary links">
+          <a class="button button-primary" href="/case-study/overview/">Case Study</a>
+          <a class="button button-secondary" href="/getting-started/overview/">Getting Started</a>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -74,18 +80,65 @@ const description =
 
 <style>
   .home-hero {
+    align-items: flex-start;
+    contain: paint;
+    display: flex;
+    isolation: isolate;
+    margin: 0;
+    max-width: none;
+    min-height: calc(100svh - var(--header-height));
+    overflow: clip;
+    padding: clamp(var(--space-2xl), 6vw, var(--space-4xl)) var(--space-page) var(--space-3xl);
+    position: relative;
+  }
+
+  .home-hero__inner {
     align-items: center;
     display: grid;
     gap: var(--space-3xl);
-    grid-template-columns: minmax(0, 1.05fr) minmax(16rem, 0.95fr);
+    grid-template-columns: minmax(18rem, 0.95fr) minmax(0, 1.05fr);
     margin: 0 auto;
     max-width: var(--container-wide);
-    min-height: calc(100svh - var(--header-height));
-    padding: clamp(var(--space-3xl), 9vw, 7rem) var(--space-page) var(--space-3xl);
+    min-height: calc(100svh - var(--header-height) - clamp(var(--space-2xl), 6vw, var(--space-4xl)) - var(--space-3xl));
+    position: relative;
+    width: 100%;
+    z-index: 1;
+  }
+
+  .home-hero__visual {
+    grid-column: 1;
+    grid-row: 1;
+    min-height: clamp(18rem, 44vw, 34rem);
+    min-width: 0;
+    position: relative;
+  }
+
+  .home-hero__logo {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    inset: 0;
+    min-width: 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .home-hero__logo img {
+    display: block;
+    max-height: clamp(14rem, 38vw, 28rem);
+    object-fit: contain;
+    width: min(100%, 30rem);
   }
 
   .home-hero__content {
+    background: var(--color-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    grid-column: 2;
+    grid-row: 1;
     min-width: 0;
+    padding: clamp(var(--space-lg), 4vw, var(--space-2xl));
   }
 
   .home-hero h1 {
@@ -103,18 +156,18 @@ const description =
     max-width: 44rem;
   }
 
-  .home-hero__logo {
-    align-items: center;
-    display: flex;
-    justify-content: center;
-    min-width: 0;
+  .home-hero__actions .button {
+    background-clip: padding-box;
   }
 
-  .home-hero__logo img {
-    display: block;
-    max-height: clamp(14rem, 38vw, 28rem);
-    object-fit: contain;
-    width: min(100%, 30rem);
+  .home-hero__actions .button-primary {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+
+  .home-hero__actions .button-secondary {
+    background: var(--color-surface-raised);
+    border-color: var(--border-strong);
   }
 
   .home-section {
@@ -150,15 +203,37 @@ const description =
   }
 
   .home-demo__media {
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-card);
     min-width: 0;
+    overflow: hidden;
+    padding-top: 2.25rem;
+    position: relative;
+  }
+
+  .home-demo__media::before {
+    background:
+      radial-gradient(circle, var(--color-accent-coral) 0 0.28rem, transparent 0.3rem) 1rem 50% / 0.7rem 0.7rem no-repeat,
+      radial-gradient(circle, var(--color-accent-yellow) 0 0.28rem, transparent 0.3rem) 2rem 50% / 0.7rem 0.7rem no-repeat,
+      radial-gradient(circle, var(--color-accent-green) 0 0.28rem, transparent 0.3rem) 3rem 50% / 0.7rem 0.7rem no-repeat,
+      linear-gradient(180deg, var(--color-surface-raised), var(--color-surface));
+    border-bottom: 1px solid var(--color-border);
+    content: "";
+    height: 2.25rem;
+    inset: 0 0 auto;
+    position: absolute;
   }
 
   .home-demo__placeholder {
     align-items: center;
     aspect-ratio: 16 / 9;
-    background: var(--color-card);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
+    background:
+      linear-gradient(135deg, color-mix(in srgb, var(--color-surface) 74%, transparent), color-mix(in srgb, var(--color-bg-soft) 66%, transparent)),
+      var(--color-card);
+    border: 0;
+    border-radius: 0;
     color: var(--color-muted);
     display: flex;
     justify-content: center;
@@ -223,7 +298,7 @@ const description =
   }
 
   @media (max-width: 920px) {
-    .home-hero,
+    .home-hero__inner,
     .home-demo__inner {
       grid-template-columns: 1fr;
     }
@@ -231,6 +306,24 @@ const description =
     .home-hero {
       gap: var(--space-2xl);
       min-height: auto;
+      padding-block: var(--space-2xl) var(--space-3xl);
+    }
+
+    .home-hero__inner {
+      gap: var(--space-xl);
+      min-height: auto;
+    }
+
+    .home-hero__visual {
+      grid-column: 1;
+      grid-row: 1;
+      min-height: auto;
+    }
+
+    .home-hero__content {
+      grid-column: 1;
+      grid-row: 2;
+      padding: var(--space-lg);
     }
 
     .home-hero__logo {
@@ -238,7 +331,8 @@ const description =
     }
 
     .home-hero__logo img {
-      width: min(100%, 20rem);
+      max-height: clamp(12rem, 34vw, 18rem);
+      width: min(100%, 22rem);
     }
 
     .home-steps {
@@ -247,6 +341,19 @@ const description =
   }
 
   @media (max-width: 620px) {
+    .home-hero {
+      padding-block: var(--space-xl) var(--space-2xl);
+    }
+
+    .home-hero__inner {
+      gap: var(--space-lg);
+    }
+
+    .home-hero__logo img {
+      max-height: clamp(11rem, 48vw, 16rem);
+      width: min(100%, 18rem);
+    }
+
     .home-hero__actions,
     .home-next-steps__links {
       align-items: stretch;
