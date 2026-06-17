@@ -1,202 +1,256 @@
 ---
+import oivaBearLogo from "../assets/logo/oiva_bear_green.svg";
 import BaseLayout from "../layouts/BaseLayout.astro";
 
+const description =
+  "A self-hosted incident investigation agent that turns production alerts into evidence-backed investigation reports";
 ---
 
-<BaseLayout
-  title="Oiva"
-  bareTitle
-  description="Oiva is an open-source, self-hosted service for AI-assisted incident investigation."
->
-  <section class="hero">
-    <div class="hero-content">
-      <p class="eyebrow">Open-source incident investigation</p>
-      <h1>Oiva</h1>
-      <p>
-        Oiva turns production alerts into evidence-backed investigation reports by combining observability data, codebase context, and team delivery workflows.
-      </p>
-      <div class="button-row">
-        <a class="button button-primary" href="/case-study/overview/">Read the case study</a>
-        <a class="button button-secondary" href="/getting-started/overview/">Get started</a>
+<BaseLayout title="Oiva" bareTitle description={description}>
+  <section class="home-hero" aria-labelledby="home-title">
+    <div class="home-hero__content">
+      <h1 id="home-title">Oiva</h1>
+      <p class="home-hero__summary">{description}</p>
+      <div class="button-row home-hero__actions" aria-label="Primary links">
+        <a class="button button-primary" href="/case-study/overview/">Case Study</a>
+        <a class="button button-secondary" href="/getting-started/overview/">Getting Started</a>
       </div>
     </div>
-    <section class="flow-panel" aria-label="Oiva workflow overview">
-      <div>
-        <span>1</span>
-        <strong>Alert received</strong>
-        <p>Honeycomb-style alert payload starts the workflow.</p>
-      </div>
-      <div>
-        <span>2</span>
-        <strong>Investigation launched</strong>
-        <p>Agents gather telemetry and codebase evidence.</p>
-      </div>
-      <div>
-        <span>3</span>
-        <strong>Report delivered</strong>
-        <p>Slack updates and final findings reach the team.</p>
-      </div>
-    </section>
+    <div class="home-hero__logo" aria-hidden="true">
+      <img src={oivaBearLogo.src} alt="" loading="eager" decoding="async" />
+    </div>
   </section>
 
-  <section class="overview-grid" aria-label="Oiva capabilities">
-    <article>
-      <h2>Investigates alerts</h2>
-      <p>Placeholder copy for how Oiva enriches noisy production alerts with practical context.</p>
-    </article>
-    <article>
-      <h2>Connects signals</h2>
-      <p>Placeholder copy for combining observability data with repository and codebase information.</p>
-    </article>
-    <article>
-      <h2>Delivers results</h2>
-      <p>Placeholder copy for live Slack updates, final reports, and reviewable investigation output.</p>
-    </article>
-    <article>
-      <h2>Runs self-hosted</h2>
-      <p>Placeholder copy for the Mastra, OpenTelemetry, Postgres, Terraform, and AWS architecture.</p>
-    </article>
+  <section class="home-section home-demo" aria-labelledby="home-demo-title">
+    <div class="home-section__inner home-demo__inner">
+      <div class="home-demo__copy">
+        <p class="eyebrow">Demo</p>
+        <h2 id="home-demo-title">See Oiva receive an alert</h2>
+        <p>A production alert arrives in Slack and starts an investigation workflow.</p>
+      </div>
+      <div class="home-demo__media" aria-label="Slack alert demo video placeholder">
+        <!-- TODO: Replace this placeholder with /media/oiva-slack-alert-demo.mp4 when the demo video is available. -->
+        <div class="home-demo__placeholder">
+          <span>Slack alert demo video placeholder</span>
+        </div>
+      </div>
+    </div>
   </section>
 
-  <section class="next-step">
-    <p class="eyebrow">Next step</p>
-    <h2>Start with the structure, then go deeper.</h2>
-    <p>This first site pass uses placeholder copy while preserving the planned routes, navigation, and content architecture.</p>
-    <div class="button-row">
-      <a class="button button-primary" href="/case-study/overview/">Case Study</a>
-      <a class="button button-secondary" href="/getting-started/overview/">Getting Started</a>
+  <section class="home-section home-how-it-works" aria-labelledby="home-how-title">
+    <div class="home-section__inner">
+      <p class="eyebrow">Workflow</p>
+      <h2 id="home-how-title">How Oiva Works</h2>
+      <div class="home-steps">
+        <article class="home-step">
+          <span class="home-step__number">1</span>
+          <h3>Alert received</h3>
+          <p>A production alert arrives from Slack or the alerting workflow.</p>
+        </article>
+        <article class="home-step">
+          <span class="home-step__number">2</span>
+          <h3>Investigation launched</h3>
+          <p>Oiva gathers observability data, codebase context, and delivery workflow evidence.</p>
+        </article>
+        <article class="home-step">
+          <span class="home-step__number">3</span>
+          <h3>Report delivered</h3>
+          <p>Oiva produces an evidence-backed investigation report for the team.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="home-section home-next-steps" aria-labelledby="home-next-title">
+    <div class="home-section__inner">
+      <h2 id="home-next-title">Next steps</h2>
+      <div class="button-row home-next-steps__links">
+        <a class="button button-primary" href="/case-study/overview/">Case Study</a>
+        <a class="button button-secondary" href="/getting-started/overview/">Getting Started</a>
+      </div>
     </div>
   </section>
 </BaseLayout>
 
 <style>
-  .hero {
+  .home-hero {
+    align-items: center;
     display: grid;
-    gap: 3rem;
-    grid-template-columns: minmax(0, 1.1fr) minmax(20rem, 0.9fr);
+    gap: var(--space-3xl);
+    grid-template-columns: minmax(0, 1.05fr) minmax(16rem, 0.95fr);
     margin: 0 auto;
     max-width: var(--container-wide);
-    min-height: calc(100vh - 4.25rem);
-    padding: clamp(4rem, 9vw, 7rem) var(--space-page) 3rem;
+    min-height: calc(100svh - var(--header-height));
+    padding: clamp(var(--space-3xl), 9vw, 7rem) var(--space-page) var(--space-3xl);
   }
 
-  .hero-content {
-    align-self: center;
+  .home-hero__content {
+    min-width: 0;
   }
 
-  h1 {
+  .home-hero h1 {
     font-size: clamp(4rem, 14vw, 9rem);
     letter-spacing: 0;
     line-height: 0.9;
     margin: 0;
   }
 
-  .hero-content > p:not(.eyebrow) {
+  .home-hero__summary {
     color: var(--color-muted);
-    font-size: clamp(1.15rem, 2vw, 1.5rem);
+    font-size: clamp(var(--text-md), 2vw, var(--text-lg));
     line-height: 1.55;
-    margin: 1.5rem 0 2rem;
-    max-width: 42rem;
+    margin: var(--space-lg) 0 var(--space-xl);
+    max-width: 44rem;
   }
 
-  .flow-panel {
-    align-self: center;
+  .home-hero__logo {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    min-width: 0;
+  }
+
+  .home-hero__logo img {
+    display: block;
+    max-height: clamp(14rem, 38vw, 28rem);
+    object-fit: contain;
+    width: min(100%, 30rem);
+  }
+
+  .home-section {
+    padding: var(--space-section) var(--space-page) 0;
+  }
+
+  .home-section__inner {
+    margin: 0 auto;
+    max-width: var(--container-wide);
+  }
+
+  .home-demo__inner {
+    align-items: center;
+    display: grid;
+    gap: var(--space-2xl);
+    grid-template-columns: minmax(0, 0.85fr) minmax(18rem, 1.15fr);
+  }
+
+  .home-demo h2,
+  .home-how-it-works h2,
+  .home-next-steps h2 {
+    font-size: clamp(var(--text-xl), 4vw, var(--text-2xl));
+    letter-spacing: 0;
+    margin: 0;
+  }
+
+  .home-demo__copy p:not(.eyebrow) {
+    color: var(--color-muted);
+    font-size: var(--text-md);
+    line-height: 1.6;
+    margin: var(--space-md) 0 0;
+    max-width: 38rem;
+  }
+
+  .home-demo__media {
+    min-width: 0;
+  }
+
+  .home-demo__placeholder {
+    align-items: center;
+    aspect-ratio: 16 / 9;
     background: var(--color-card);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
-    box-shadow: var(--shadow-soft);
-    display: grid;
-    gap: 1rem;
-    padding: 1rem;
+    color: var(--color-muted);
+    display: flex;
+    justify-content: center;
+    padding: var(--space-lg);
+    text-align: center;
   }
 
-  .flow-panel div {
-    background: var(--color-surface);
+  .home-demo__placeholder span {
+    font-size: var(--text-sm);
+    font-weight: 700;
+    line-height: var(--leading-ui);
+  }
+
+  .home-steps {
+    display: grid;
+    gap: var(--space-md);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-top: var(--space-xl);
+  }
+
+  .home-step {
+    background: var(--color-card);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
-    padding: 1rem;
+    padding: var(--space-lg);
   }
 
-  .flow-panel span {
+  .home-step__number {
     align-items: center;
     background: var(--color-accent-strong);
     border-radius: 999px;
     color: var(--color-background);
     display: inline-flex;
-    font-size: 0.8rem;
+    font-size: var(--text-xs);
     font-weight: 800;
     height: 1.75rem;
     justify-content: center;
-    margin-bottom: 0.75rem;
+    line-height: 1;
+    margin-bottom: var(--space-md);
     width: 1.75rem;
   }
 
-  .flow-panel strong {
-    display: block;
-    font-size: 1.1rem;
-  }
-
-  .flow-panel p {
-    color: var(--color-muted);
-    margin: 0.35rem 0 0;
-  }
-
-  .overview-grid,
-  .next-step {
-    margin: 0 auto;
-    max-width: var(--container-wide);
-    padding: var(--space-section) var(--space-page) 0;
-  }
-
-  .overview-grid {
-    display: grid;
-    gap: 1rem;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-
-  .overview-grid article {
-    background: var(--color-card);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    padding: 1.25rem;
-  }
-
-  .overview-grid h2,
-  .next-step h2 {
-    margin: 0 0 0.75rem;
-  }
-
-  .overview-grid p,
-  .next-step p:not(.eyebrow) {
-    color: var(--color-muted);
-    line-height: 1.6;
+  .home-step h3 {
+    font-size: var(--text-md);
     margin: 0;
   }
 
-  .next-step {
-    max-width: 760px;
+  .home-step p {
+    color: var(--color-muted);
+    line-height: 1.6;
+    margin: var(--space-sm) 0 0;
+  }
+
+  .home-next-steps {
+    padding-bottom: var(--space-section);
     text-align: center;
   }
 
-  .next-step .button-row {
+  .home-next-steps__links {
     justify-content: center;
-    margin-top: 1.5rem;
+    margin-top: var(--space-lg);
   }
 
   @media (max-width: 920px) {
-    .hero {
+    .home-hero,
+    .home-demo__inner {
       grid-template-columns: 1fr;
+    }
+
+    .home-hero {
+      gap: var(--space-2xl);
       min-height: auto;
     }
 
-    .overview-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+    .home-hero__logo {
+      justify-content: flex-start;
+    }
+
+    .home-hero__logo img {
+      width: min(100%, 20rem);
+    }
+
+    .home-steps {
+      grid-template-columns: 1fr;
     }
   }
 
   @media (max-width: 620px) {
-    .overview-grid {
-      grid-template-columns: 1fr;
+    .home-hero__actions,
+    .home-next-steps__links {
+      align-items: stretch;
+      flex-direction: column;
     }
   }
 </style>
