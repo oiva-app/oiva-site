@@ -337,7 +337,9 @@ samp {
 
 .callout {
   --callout-color: var(--color-accent-green);
+  background: var(--color-surface);
   background: color-mix(in srgb, var(--callout-color) 12%, var(--color-surface));
+  border: 1px solid var(--border-subtle);
   border: 1px solid color-mix(in srgb, var(--callout-color) 58%, var(--border-subtle));
   border-radius: var(--radius-md);
   color: var(--color-text);
