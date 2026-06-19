@@ -109,22 +109,22 @@ Use semantic tokens throughout the site. Avoid hardcoding raw colors inside comp
 ```css
 :root {
   --font-sans: Inter, Source Sans 3, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-display: Merriweather, Spectral, Georgia, "Times New Roman", serif;
+  --font-display: var(--font-sans);
   --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
 }
 ```
 
 ## Typography Usage
 
-Use the display serif for:
+Use the display sans for:
 
 * H1
 * H2
-* pull quotes
 * homepage hero headline
 
 Use sans serif for:
 
+* pull quotes
 * body text
 * navigation
 * sidebar
@@ -153,9 +153,9 @@ Use sans serif for:
 Recommended usage:
 
 ```txt
-H1: --text-3xl, display serif
-H2: --text-2xl, display serif
-H3: --text-lg, sans serif or display serif depending on context
+H1: --text-3xl, display sans
+H2: --text-2xl, display sans
+H3: --text-lg, sans serif
 Body: --text-base
 Lead paragraph: --text-md
 Caption: --text-sm
