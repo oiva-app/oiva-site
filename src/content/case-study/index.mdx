@@ -1,15 +1,97 @@
 ---
-title: "Design Decisions & Trade-offs"
-description: "A placeholder map of the major technical and product decisions behind Oiva."
-order: 6
-sidebarLabel: "Design Decisions"
+title: "Case Study"
+description: "A single-page case study covering Oiva's problem domain, design, demo flow, infrastructure, and future work."
+order: 1
+sidebarLabel: "Case Study"
 ---
 
 <span class="draft-label">Draft placeholder</span>
 
+## Overview: What is Oiva?
+
+This page will introduce Oiva as an open-source, self-hosted service for AI-assisted incident investigation. The final copy will explain what problem Oiva addresses, how it fits into an engineering team's existing tools, and what readers should expect from the case study.
+
+### What Oiva Does
+
+Oiva receives an alert, starts an investigation, gathers evidence from observability and codebase sources, and returns a report that is easier for a team to act on than an isolated notification.
+
+### Why It Exists
+
+The final version will describe the gap between alert delivery and practical incident understanding. This placeholder gives the layout enough real structure to exercise article width, heading links, and navigation flow.
+
+### What This Case Study Covers
+
+The case study will move from the problem domain through the design decisions, demo flow, infrastructure choices, and future work.
+
+## Problem Domain
+
+This page will describe the operational problem Oiva addresses: teams already receive alerts, but alerts often leave the next investigation step unclear.
+
+### Alert Context
+
+Production alerts are useful only when responders can quickly understand what changed, what is affected, and what evidence supports the next action.
+
+### Investigation Overhead
+
+The final copy will explain the repeated work involved in jumping between telemetry, repositories, dashboards, and communication tools during early incident response.
+
+### Useful Automation
+
+Oiva's target is not replacing engineers. It is reducing the cost of gathering and organizing initial evidence.
+
+## Existing Solutions
+
+This page will compare Oiva with existing product categories and explain the design space that shaped the project.
+
+### Standalone Autonomous Agents
+
+Some products approach incident response as a broad autonomous SRE workflow. The final version will contrast those systems with Oiva's narrower investigation-reporting scope.
+
+### Observability Platform Assistants
+
+Observability-native tools can provide rich context inside a platform, but they may be tied to one vendor's data model and user interface.
+
+### Incident Management Tools
+
+Incident platforms help teams coordinate response. Oiva focuses earlier in the flow by enriching alerts before responders spend time manually collecting context.
+
+## Introducing Oiva
+
+This page will introduce the Oiva system and explain the high-level interaction between alerts, agents, telemetry, repositories, and Slack reports.
+
+### Core Flow
+
+An alert arrives through a webhook, Oiva launches an investigation, and the team receives live updates plus a final evidence-backed report.
+
+### Primary Inputs
+
+The first implementation integrates with observability data and Git repository context. Final copy will clarify which inputs are required and which are planned.
+
+### Primary Outputs
+
+Oiva's output is a structured incident report designed to be useful to humans, not a hidden internal agent trace.
+
+## Demo / Walkthrough
+
+This page will walk through the demo scenario once final screenshots and copy are ready.
+
+### Triggering an Alert
+
+The demo begins with an alert payload that represents a production signal requiring investigation.
+
+### Following the Investigation
+
+The final walkthrough will show how Oiva reports progress while collecting telemetry and code context.
+
+### Reading the Report
+
+The final section will explain how the report presents findings, evidence, uncertainty, and suggested next steps.
+
+## Design Decisions & Trade-offs
+
 This page will collect the main decisions and trade-offs from the case study draft. The first structural version keeps these topics together unless the page later becomes too long.
 
-## Agent Design
+### Agent Design
 
 At the core of Oiva’s incident workflow is the investigation phase, the agentic process surrounded by the application’s deterministic edges. It encompasses two specialized domains: querying and interpreting telemetry data and examining the user’s codebase and Git history. Oiva then synthesizes the findings into a cohesive hypothesis with actionable next steps. ThisThe phase poses a central design challenge and directly 
 affects the quality of Oiva’s incident reports. The ask is big: the agent must be built to reason reliably about an open-ended alert, investigate each domain effectively while sticking to various specialized instruction sets, and synthesize surfaced data accurately, minimizing hallucinations as the investigation context grows. 
@@ -18,35 +100,71 @@ affects the quality of Oiva’s incident reports. The ask is big: the agent must
 
 Oiva is a multi-agent system rather than a single general-purpose agent. An early prototype took the latter approach, offering simplicity and cost-effectiveness by minimizing LLM calls within a single loop. Its limits became apparent as we expanded domain-specific capabilities. The tight coupling of components within a single agent made it much harder to develop, scope, and test new additions. Thus, we transitioned Oiva to the current multi-agent system, in which a supervisor and specialized subagents split responsibilities. A separate report agent sits downstream of the investigation step, rendering relevant findings into Oiva’s main user-facing deliverable –- the incident report.  
 
-## Incident Report Delivery
+### Incident Report Delivery
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris placerat urna sed efficitur maximus. Praesent molestie lorem in tortor congue luctus. Quisque sed diam eget orci volutpat varius quis vitae lorem. Cras sed scelerisque dui. In luctus purus auctor, bibendum lacus eget, posuere ligula. Maecenas pharetra pretium ipsum, ac vehicula augue vestibulum eget. Sed a tincidunt enim. Cras nunc arcu, feugiat id sollicitudin non, volutpat eu metus. Nunc fringilla vestibulum est, ut luctus enim bibendum quis.
 
 Aliquam placerat nisl vitae magna tempus pharetra. Praesent consequat, ligula a bibendum semper, erat augue malesuada augue, in efficitur magna arcu eu nisi. Cras id interdum nulla. Vivamus viverra nisl vitae tortor convallis viverra. Pellentesque eleifend felis efficitur bibendum congue. Suspendisse placerat nulla mauris, nec tempor leo pharetra ac. Proin facilisis iaculis lacus, at malesuada orci. Aenean vitae ullamcorper velit. In et leo placerat, lacinia elit at, volutpat urna. Fusce consequat arcu ut odio pretium tristique. Aenean aliquet congue velit, vel aliquet eros viverra non. Sed vehicula venenatis nibh id finibus. Suspendisse dignissim arcu mauris, eget pulvinar arcu finibus vel. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
 
 Suspendisse consequat est feugiat neque euismod, eu posuere ex molestie. Aenean elementum tellus in mauris faucibus bibendum. Sed elementum, ligula ac tincidunt sollicitudin, nibh tellus sollicitudin magna, at ornare urna nunc sed mi. Nam ullamcorper magna a massa sollicitudin aliquam. Nullam dapibus nulla quis nisi mattis, vitae elementum tellus molestie. Praesent eget massa quis nibh ultrices consectetur vitae in tortor. Mauris quis efficitur erat, nec finibus metus. Quisque feugiat eleifend nibh nec porta. Sed sodales libero sit amet viverra sollicitudin. Mauris eu lorem ac felis aliquet hendrerit ut sit amet magna. Aenean massa sapien, porttitor ac porta congue, semper dapibus ligula. Nullam elementum risus sit amet molestie molestie. Duis lectus odio, semper a felis ac, placerat.
-## Code Architecture & Patterns
+### Code Architecture & Patterns
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris placerat urna sed efficitur maximus. Praesent molestie lorem in tortor congue luctus. Quisque sed diam eget orci volutpat varius quis vitae lorem. Cras sed scelerisque dui. In luctus purus auctor, bibendum lacus eget, posuere ligula. Maecenas pharetra pretium ipsum, ac vehicula augue vestibulum eget. Sed a tincidunt enim. Cras nunc arcu, feugiat id sollicitudin non, volutpat eu metus. Nunc fringilla vestibulum est, ut luctus enim bibendum quis.
 
 Aliquam placerat nisl vitae magna tempus pharetra. Praesent consequat, ligula a bibendum semper, erat augue malesuada augue, in efficitur magna arcu eu nisi. Cras id interdum nulla. Vivamus viverra nisl vitae tortor convallis viverra. Pellentesque eleifend felis efficitur bibendum congue. Suspendisse placerat nulla mauris, nec tempor leo pharetra ac. Proin facilisis iaculis lacus, at malesuada orci. Aenean vitae ullamcorper velit. In et leo placerat, lacinia elit at, volutpat urna. Fusce consequat arcu ut odio pretium tristique. Aenean aliquet congue velit, vel aliquet eros viverra non. Sed vehicula venenatis nibh id finibus. Suspendisse dignissim arcu mauris, eget pulvinar arcu finibus vel. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
 
 Suspendisse consequat est feugiat neque euismod, eu posuere ex molestie. Aenean elementum tellus in mauris faucibus bibendum. Sed elementum, ligula ac tincidunt sollicitudin, nibh tellus sollicitudin magna, at ornare urna nunc sed mi. Nam ullamcorper magna a massa sollicitudin aliquam. Nullam dapibus nulla quis nisi mattis, vitae elementum tellus molestie. Praesent eget massa quis nibh ultrices consectetur vitae in tortor. Mauris quis efficitur erat, nec finibus metus. Quisque feugiat eleifend nibh nec porta. Sed sodales libero sit amet viverra sollicitudin. Mauris eu lorem ac felis aliquet hendrerit ut sit amet magna. Aenean massa sapien, porttitor ac porta congue, semper dapibus ligula. Nullam elementum risus sit amet molestie molestie. Duis lectus odio, semper a felis ac, placerat.
-## Data-related Decisions
+### Data-related Decisions
 
 This section will explain what Oiva stores, what it treats as external evidence, and how report data supports later review.
 
-## Evals & Testing
+### Evals & Testing
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris placerat urna sed efficitur maximus. Praesent molestie lorem in tortor congue luctus. Quisque sed diam eget orci volutpat varius quis vitae lorem. Cras sed scelerisque dui. In luctus purus auctor, bibendum lacus eget, posuere ligula. Maecenas pharetra pretium ipsum, ac vehicula augue vestibulum eget. Sed a tincidunt enim. Cras nunc arcu, feugiat id sollicitudin non, volutpat eu metus. Nunc fringilla vestibulum est, ut luctus enim bibendum quis.
 
 Aliquam placerat nisl vitae magna tempus pharetra. Praesent consequat, ligula a bibendum semper, erat augue malesuada augue, in efficitur magna arcu eu nisi. Cras id interdum nulla. Vivamus viverra nisl vitae tortor convallis viverra. Pellentesque eleifend felis efficitur bibendum congue. Suspendisse placerat nulla mauris, nec tempor leo pharetra ac. Proin facilisis iaculis lacus, at malesuada orci. Aenean vitae ullamcorper velit. In et leo placerat, lacinia elit at, volutpat urna. Fusce consequat arcu ut odio pretium tristique. Aenean aliquet congue velit, vel aliquet eros viverra non. Sed vehicula venenatis nibh id finibus. Suspendisse dignissim arcu mauris, eget pulvinar arcu finibus vel. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
 
 Suspendisse consequat est feugiat neque euismod, eu posuere ex molestie. Aenean elementum tellus in mauris faucibus bibendum. Sed elementum, ligula ac tincidunt sollicitudin, nibh tellus sollicitudin magna, at ornare urna nunc sed mi. Nam ullamcorper magna a massa sollicitudin aliquam. Nullam dapibus nulla quis nisi mattis, vitae elementum tellus molestie. Praesent eget massa quis nibh ultrices consectetur vitae in tortor. Mauris quis efficitur erat, nec finibus metus. Quisque feugiat eleifend nibh nec porta. Sed sodales libero sit amet viverra sollicitudin. Mauris eu lorem ac felis aliquet hendrerit ut sit amet magna. Aenean massa sapien, porttitor ac porta congue, semper dapibus ligula. Nullam elementum risus sit amet molestie molestie. Duis lectus odio, semper a felis ac, placerat.
-## Observability
+### Observability
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris placerat urna sed efficitur maximus. Praesent molestie lorem in tortor congue luctus. Quisque sed diam eget orci volutpat varius quis vitae lorem. Cras sed scelerisque dui. In luctus purus auctor, bibendum lacus eget, posuere ligula. Maecenas pharetra pretium ipsum, ac vehicula augue vestibulum eget. Sed a tincidunt enim. Cras nunc arcu, feugiat id sollicitudin non, volutpat eu metus. Nunc fringilla vestibulum est, ut luctus enim bibendum quis.
 
 Aliquam placerat nisl vitae magna tempus pharetra. Praesent consequat, ligula a bibendum semper, erat augue malesuada augue, in efficitur magna arcu eu nisi. Cras id interdum nulla. Vivamus viverra nisl vitae tortor convallis viverra. Pellentesque eleifend felis efficitur bibendum congue. Suspendisse placerat nulla mauris, nec tempor leo pharetra ac. Proin facilisis iaculis lacus, at malesuada orci. Aenean vitae ullamcorper velit. In et leo placerat, lacinia elit at, volutpat urna. Fusce consequat arcu ut odio pretium tristique. Aenean aliquet congue velit, vel aliquet eros viverra non. Sed vehicula venenatis nibh id finibus. Suspendisse dignissim arcu mauris, eget pulvinar arcu finibus vel. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
 
 Suspendisse consequat est feugiat neque euismod, eu posuere ex molestie. Aenean elementum tellus in mauris faucibus bibendum. Sed elementum, ligula ac tincidunt sollicitudin, nibh tellus sollicitudin magna, at ornare urna nunc sed mi. Nam ullamcorper magna a massa sollicitudin aliquam. Nullam dapibus nulla quis nisi mattis, vitae elementum tellus molestie. Praesent eget massa quis nibh ultrices consectetur vitae in tortor. Mauris quis efficitur erat, nec finibus metus. Quisque feugiat eleifend nibh nec porta. Sed sodales libero sit amet viverra sollicitudin. Mauris eu lorem ac felis aliquet hendrerit ut sit amet magna. Aenean massa sapien, porttitor ac porta congue, semper dapibus ligula. Nullam elementum risus sit amet molestie molestie. Duis lectus odio, semper a felis ac, placerat.
+
+## Infrastructure Architecture
+
+This page will describe Oiva's deployment architecture and the practical infrastructure trade-offs behind it.
+
+### Choosing AWS
+
+The final copy will explain why AWS was chosen for the capstone deployment target.
+
+### Terraform and Escape Hatches
+
+Infrastructure is provisioned with Terraform while preserving room for direct operational control when needed.
+
+### ECS and Fargate
+
+This section will describe the container runtime decision and how services are deployed.
+
+### Networking and Data Services
+
+The final version will cover public/private boundaries, RDS, S3, secrets handling, and replication.
+
+## Future Work
+
+This page will summarize where Oiva could go next after the initial implementation.
+
+### Broadening User Options
+
+Future versions may support more observability sources, deployment shapes, and team communication preferences.
+
+### Augmenting Agent Capabilities
+
+The final copy will identify improvements to investigation depth, tool use, report confidence, and user control.
+
+### Improving Deployment Readiness
+
+This section will cover the work needed to make Oiva easier to operate outside the original project environment.

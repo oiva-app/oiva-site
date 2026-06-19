@@ -1,5 +1,3 @@
-import type { CollectionEntry } from "astro:content";
-import { getCollection } from "astro:content";
 import { withBase } from "./urls";
 
 export type SectionKey = "caseStudy" | "gettingStarted";
@@ -30,42 +28,31 @@ export const sectionTitles: Record<SectionKey, string> = {
   gettingStarted: "Getting Started",
 };
 
-export async function getSectionEntries(section: SectionKey) {
-  const entries = await getCollection(section);
+export function toSinglePageSidebarPages(
+  section: SectionKey,
+  headings: HeadingLink[],
+): SectionPage[] {
+  const pages: SectionPage[] = [];
 
-  return entries.sort((a, b) => {
-    if (a.data.order === b.data.order) {
-      return a.id.localeCompare(b.id);
+  headings.forEach((heading) => {
+    if (heading.depth === 2) {
+      pages.push({
+        href: withBase(`${sectionBasePath[section]}/#${heading.slug}`),
+        label: heading.text,
+        title: heading.text,
+        description: "",
+        id: heading.slug,
+        order: pages.length + 1,
+        headings: [],
+      });
+
+      return;
     }
 
-    return a.data.order - b.data.order;
+    if (heading.depth === 3 && pages.length > 0) {
+      pages[pages.length - 1].headings.push(heading);
+    }
   });
-}
 
-export function mapSectionPages(
-  section: SectionKey,
-  entries: CollectionEntry<SectionKey>[],
-): SectionPage[] {
-  return entries.map((entry) => ({
-    href: withBase(`${sectionBasePath[section]}/${entry.id}/`),
-    label: entry.data.sidebarLabel ?? entry.data.title,
-    title: entry.data.title,
-    description: entry.data.description,
-    id: entry.id,
-    order: entry.data.order,
-    headings: [],
-  }));
-}
-
-export function getAdjacentPages(pages: SectionPage[], currentId: string) {
-  const index = pages.findIndex((page) => page.id === currentId);
-
-  return {
-    previous: index > 0 ? pages[index - 1] : undefined,
-    next: index >= 0 && index < pages.length - 1 ? pages[index + 1] : undefined,
-  };
-}
-
-export function toHeadingLinks(headings: HeadingLink[]) {
-  return headings.filter((heading) => heading.depth === 2);
+  return pages;
 }

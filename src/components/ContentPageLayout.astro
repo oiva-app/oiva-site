@@ -2,7 +2,6 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import SectionSidebar from "./SectionSidebar.astro";
 import {
-  getAdjacentPages,
   sectionTitles,
   type SectionKey,
   type SectionPage,
@@ -18,8 +17,6 @@ type Props = {
 
 const { section, title, description, currentPageId, pages } = Astro.props;
 const sectionTitle = sectionTitles[section];
-const { previous, next } = getAdjacentPages(pages, currentPageId);
-const hasPager = Boolean(previous || next);
 const usesFramedContentLayout = section === "caseStudy" || section === "gettingStarted";
 ---
 
@@ -40,24 +37,6 @@ const usesFramedContentLayout = section === "caseStudy" || section === "gettingS
       <div class="prose">
         <slot />
       </div>
-
-      {hasPager && (
-        <nav class="pager" aria-label="Previous and next pages">
-          {previous && (
-            <a class="pager-link" href={previous.href}>
-              <span>Previous</span>
-              <strong>{previous.label}</strong>
-            </a>
-          )}
-
-          {next && (
-            <a class="pager-link pager-link-next" href={next.href}>
-              <span>Next</span>
-              <strong>{next.label}</strong>
-            </a>
-          )}
-        </nav>
-      )}
     </article>
   </div>
 </BaseLayout>
@@ -118,45 +97,6 @@ const usesFramedContentLayout = section === "caseStudy" || section === "gettingS
     margin: var(--space-md) 0 var(--space-xl);
   }
 
-  .pager {
-    border-top: 1px solid var(--border-subtle);
-    display: grid;
-    gap: var(--space-md);
-    grid-template-columns: 1fr 1fr;
-    margin-top: var(--space-2xl);
-    padding-top: var(--space-lg);
-  }
-
-  .pager-link {
-    background: var(--color-surface);
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-md);
-    color: var(--color-text);
-    display: grid;
-    gap: var(--space-2xs);
-    line-height: var(--leading-ui);
-    padding: var(--space-md);
-    text-decoration: none;
-  }
-
-  .pager-link:hover {
-    background: var(--color-surface-raised);
-    border-color: var(--border-strong);
-    color: var(--color-text);
-  }
-
-  .pager-link span {
-    color: var(--color-text-subtle);
-    font-size: var(--text-xs);
-    font-weight: 800;
-    text-transform: uppercase;
-  }
-
-  .pager-link-next {
-    grid-column: 2;
-    text-align: right;
-  }
-
   @media (max-width: 900px) {
     .content-shell {
       display: block;
@@ -165,15 +105,6 @@ const usesFramedContentLayout = section === "caseStudy" || section === "gettingS
 
     .content-shell-framed .content-article {
       padding: var(--space-lg);
-    }
-
-    .pager {
-      grid-template-columns: 1fr;
-    }
-
-    .pager-link-next {
-      grid-column: auto;
-      text-align: left;
     }
   }
 </style>

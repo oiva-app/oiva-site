@@ -13,21 +13,34 @@ const { title, pages, currentPageId } = Astro.props;
 <aside
   class="section-sidebar"
   data-section-accordion
-  data-section-accordion-navigation="animated"
   data-current-page={currentPageId}
 >
   <nav aria-label={`${title} pages`}>
     <p class="sidebar-title">{title}</p>
     {pages.map((page) => (
       <div class="page-nav-item" data-page-id={page.id}>
-        <a
-          class="page-link"
-          href={page.href}
-          aria-current={page.id === currentPageId ? "page" : undefined}
-          data-section-page-link
-        >
-          {page.label}
-        </a>
+        <div class="page-link-row">
+          <a
+            class="page-link"
+            href={page.href}
+            data-section-page-link
+          >
+            {page.label}
+          </a>
+          {page.headings.length > 0 && (
+            <button
+              class="page-toggle"
+              type="button"
+              aria-expanded={page.id === currentPageId ? "true" : "false"}
+              aria-label={`Toggle ${page.label} subsections`}
+              data-section-toggle
+            >
+              <svg class="toggle-icon" aria-hidden="true" viewBox="0 0 16 16">
+                <path d="M6 4l4 4-4 4"></path>
+              </svg>
+            </button>
+          )}
+        </div>
         {page.headings.length > 0 && (
           <div
             class="page-headings"
@@ -47,113 +60,30 @@ const { title, pages, currentPageId } = Astro.props;
 </aside>
 
 <script>
-  import { navigate } from "astro:transitions/client";
-
   type PanelElement = HTMLElement & { dataset: DOMStringMap };
 
-  const accordionNavigationDelay = 360;
-  const navigationLockFallbackDelay = accordionNavigationDelay + 8000;
-  const pendingNavigationStorageKey = "oiva-section-navigation-pending";
   const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-  let isNavigating = false;
-  let navigationLockFallbackTimer: number | undefined;
-  let pendingSidebarNavigationTimer: number | undefined;
-
-  const getPendingSectionNavigation = () => {
-    try {
-      return sessionStorage.getItem(pendingNavigationStorageKey) === "true";
-    } catch {
-      return document.documentElement.dataset.sectionNavigationPending === "true";
-    }
-  };
-
-  const setPendingSectionNavigation = () => {
-    try {
-      sessionStorage.setItem(pendingNavigationStorageKey, "true");
-    } catch {
-      document.documentElement.dataset.sectionNavigationPending = "true";
-    }
-  };
-
-  const clearPendingSectionNavigation = () => {
-    try {
-      sessionStorage.removeItem(pendingNavigationStorageKey);
-    } catch {
-      // Ignore unavailable storage.
-    }
-
-    delete document.documentElement.dataset.sectionNavigationPending;
-  };
-
-  const clearPendingSidebarNavigation = () => {
-    if (pendingSidebarNavigationTimer !== undefined) {
-      window.clearTimeout(pendingSidebarNavigationTimer);
-      pendingSidebarNavigationTimer = undefined;
-    }
-  };
-
-  const releaseSidebarNavigationLock = () => {
-    isNavigating = false;
-    clearPendingSidebarNavigation();
-
-    if (navigationLockFallbackTimer !== undefined) {
-      window.clearTimeout(navigationLockFallbackTimer);
-      navigationLockFallbackTimer = undefined;
-    }
-  };
-
-  const abortSidebarNavigation = () => {
-    releaseSidebarNavigationLock();
-    clearPendingSectionNavigation();
-  };
-
-  const startSidebarNavigation = () => {
-    releaseSidebarNavigationLock();
-    isNavigating = true;
-    navigationLockFallbackTimer = window.setTimeout(
-      abortSidebarNavigation,
-      navigationLockFallbackDelay,
-    );
-  };
-
-  const shouldHandleSidebarNavigation = (event: MouseEvent, link: HTMLAnchorElement) => {
-    if (
-      link.getAttribute("aria-current") === "page" ||
-      link.hasAttribute("download") ||
-      link.dataset.astroReload !== undefined ||
-      event.defaultPrevented ||
-      event.button !== 0 ||
-      event.metaKey ||
-      event.ctrlKey ||
-      event.altKey ||
-      event.shiftKey
-    ) {
-      return false;
-    }
-
-    const target = link.getAttribute("target");
-
-    if (target && target !== "_self") {
-      return false;
-    }
-
-    return new URL(link.href).origin === window.location.origin;
-  };
-
-  const getSidebarNavigationOptions = (link: HTMLAnchorElement) => ({
-    history: link.dataset.astroHistory === "replace" ? "replace" as const : "auto" as const,
-    sourceElement: link,
-  });
+  const transitionCleanup = new WeakMap<PanelElement, () => void>();
+  let panelTransitionId = 0;
 
   const setPanelOpen = (
     panel: PanelElement,
     isOpen: boolean,
     animate: boolean,
   ) => {
+    transitionCleanup.get(panel)?.();
+
+    const transitionId = `${++panelTransitionId}`;
+    panel.dataset.transitionId = transitionId;
     panel.dataset.open = isOpen ? "true" : "false";
     panel.setAttribute("aria-hidden", isOpen ? "false" : "true");
 
+    const item = panel.closest<HTMLElement>("[data-page-id]");
+    const toggle = item?.querySelector<HTMLButtonElement>("[data-section-toggle]");
+    toggle?.setAttribute("aria-expanded", isOpen ? "true" : "false");
+
     if (reducedMotionQuery.matches || !animate) {
+      transitionCleanup.delete(panel);
       panel.style.height = isOpen ? "auto" : "0px";
       return;
     }
@@ -164,6 +94,10 @@ const { title, pages, currentPageId } = Astro.props;
     panel.style.height = `${startHeight}px`;
 
     requestAnimationFrame(() => {
+      if (panel.dataset.transitionId !== transitionId) {
+        return;
+      }
+
       panel.style.height = `${endHeight}px`;
     });
 
@@ -172,58 +106,56 @@ const { title, pages, currentPageId } = Astro.props;
         return;
       }
 
-      panel.removeEventListener("transitionend", finishTransition);
+      cleanupTransition();
 
-      if (isOpen) {
+      if (panel.dataset.transitionId !== transitionId) {
+        return;
+      }
+
+      if (panel.dataset.open === "true" && isOpen) {
         panel.style.height = "auto";
+        return;
+      }
+
+      if (panel.dataset.open === "false" && !isOpen) {
+        panel.style.height = "0px";
       }
     };
 
+    const cleanupTransition = () => {
+      panel.removeEventListener("transitionend", finishTransition);
+      transitionCleanup.delete(panel);
+    };
+
+    transitionCleanup.set(panel, cleanupTransition);
     panel.addEventListener("transitionend", finishTransition);
   };
 
-  const animateIncomingPanel = (panel: PanelElement) => {
-    if (reducedMotionQuery.matches) {
-      setPanelOpen(panel, true, false);
-      return;
-    }
-
-    panel.dataset.open = "true";
-    panel.setAttribute("aria-hidden", "false");
-    panel.style.height = "0px";
-    panel.style.visibility = "hidden";
-
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        panel.style.visibility = "";
-        setPanelOpen(panel, true, true);
-      });
-    });
-  };
+  const getPanelForItem = (item: HTMLElement) =>
+    item.querySelector<PanelElement>("[data-heading-panel]");
 
   const initializeSectionAccordions = () => {
-    releaseSidebarNavigationLock();
-    const shouldAnimateIncoming = getPendingSectionNavigation();
-
     document.querySelectorAll<HTMLElement>("[data-section-accordion]").forEach((accordion) => {
-      const currentPageId = accordion.dataset.currentPage;
-      const panels = accordion.querySelectorAll<PanelElement>("[data-heading-panel]");
-      const hasAnimatedNavigation =
-        accordion.dataset.sectionAccordionNavigation === "animated";
+      const panels = Array.from(accordion.querySelectorAll<PanelElement>("[data-heading-panel]"));
+      const items = Array.from(accordion.querySelectorAll<HTMLElement>("[data-page-id]"));
+      const hash = window.location.hash.replace(/^#/, "");
+      const matchingHashItem = items.find((item) => {
+        if (item.dataset.pageId === hash) {
+          return true;
+        }
+
+        return Boolean(hash && item.querySelector(`a[href$="#${CSS.escape(hash)}"]`));
+      });
+      const fallbackItem = items.find((item) => item.dataset.pageId === accordion.dataset.currentPage)
+        ?? items[0];
+      const initiallyOpenItem = matchingHashItem ?? fallbackItem;
 
       panels.forEach((panel) => {
         const item = panel.closest<HTMLElement>("[data-page-id]");
-        const isCurrent = item?.dataset.pageId === currentPageId;
-
-        if (shouldAnimateIncoming && hasAnimatedNavigation && isCurrent) {
-          animateIncomingPanel(panel);
-          return;
-        }
-
         setPanelOpen(
           panel,
-          isCurrent,
-          accordion.dataset.accordionReady === "true",
+          item === initiallyOpenItem || panel.dataset.open === "true",
+          false,
         );
       });
 
@@ -235,50 +167,37 @@ const { title, pages, currentPageId } = Astro.props;
 
       accordion.addEventListener("click", (event) => {
         const target = event.target;
+        const toggle = target instanceof Element
+          ? target.closest<HTMLButtonElement>("[data-section-toggle]")
+          : null;
+
+        if (toggle) {
+          const item = toggle.closest<HTMLElement>("[data-page-id]");
+          const panel = item ? getPanelForItem(item) : null;
+
+          if (!panel) {
+            return;
+          }
+
+          setPanelOpen(panel, panel.dataset.open !== "true", true);
+          return;
+        }
+
         const link = target instanceof Element
           ? target.closest<HTMLAnchorElement>("[data-section-page-link]")
           : null;
 
-        if (
-          !hasAnimatedNavigation ||
-          !link ||
-          !(event instanceof MouseEvent) ||
-          !shouldHandleSidebarNavigation(event, link)
-        ) {
+        if (!link) {
           return;
         }
 
-        event.preventDefault();
-
-        if (isNavigating) {
-          return;
+        const item = link.closest<HTMLElement>("[data-page-id]");
+        const panel = item ? getPanelForItem(item) : null;
+        if (panel) {
+          setPanelOpen(panel, true, true);
         }
-
-        startSidebarNavigation();
-        setPendingSectionNavigation();
-
-        panels.forEach((panel) => {
-          if (panel.dataset.open === "true") {
-            setPanelOpen(panel, false, true);
-          }
-        });
-
-        pendingSidebarNavigationTimer = window.setTimeout(() => {
-          pendingSidebarNavigationTimer = undefined;
-
-          try {
-            navigate(link.href, getSidebarNavigationOptions(link));
-          } catch (error) {
-            abortSidebarNavigation();
-            throw error;
-          }
-        }, reducedMotionQuery.matches ? 0 : accordionNavigationDelay);
       });
     });
-
-    if (shouldAnimateIncoming) {
-      clearPendingSectionNavigation();
-    }
   };
 
   initializeSectionAccordions();
@@ -286,6 +205,7 @@ const { title, pages, currentPageId } = Astro.props;
   if (document.documentElement.dataset.sectionAccordionListenerReady !== "true") {
     document.documentElement.dataset.sectionAccordionListenerReady = "true";
     document.addEventListener("astro:page-load", initializeSectionAccordions);
+    window.addEventListener("hashchange", initializeSectionAccordions);
   }
 </script>
 
@@ -323,6 +243,52 @@ const { title, pages, currentPageId } = Astro.props;
     min-width: 0;
   }
 
+  .page-link-row {
+    align-items: center;
+    display: grid;
+    gap: var(--space-2xs);
+    grid-template-columns: minmax(0, 1fr) 1.5rem;
+    min-width: 0;
+  }
+
+  .page-toggle {
+    align-items: center;
+    appearance: none;
+    background: transparent;
+    border: 0;
+    border-radius: var(--radius-xs);
+    color: var(--color-text-subtle);
+    cursor: pointer;
+    display: inline-flex;
+    height: 1.5rem;
+    justify-content: center;
+    padding: 0;
+    width: 1.5rem;
+  }
+
+  .page-toggle:hover {
+    background: var(--color-surface-raised);
+    color: var(--color-text);
+  }
+
+  .toggle-icon {
+    height: 0.8rem;
+    transition: transform 180ms ease;
+    width: 0.8rem;
+  }
+
+  .toggle-icon path {
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2;
+  }
+
+  .page-toggle[aria-expanded="true"] .toggle-icon {
+    transform: rotate(90deg);
+  }
+
   a {
     border-radius: var(--radius-sm);
     color: var(--color-text-muted);
@@ -334,8 +300,13 @@ const { title, pages, currentPageId } = Astro.props;
     text-decoration: none;
   }
 
+  .page-link {
+    min-width: 0;
+  }
+
   a:hover,
-  a[aria-current="page"] {
+  .page-link:hover,
+  .page-link:focus-visible {
     background: var(--color-primary-soft);
     color: var(--color-text);
   }
@@ -343,7 +314,7 @@ const { title, pages, currentPageId } = Astro.props;
   .page-headings {
     display: grid;
     gap: var(--space-2xs);
-    margin: 0 0 0.45rem 0.95rem;
+    margin: 0 1.7rem 0.45rem 0.75rem;
     min-width: 0;
     overflow: hidden;
     transition: height 360ms ease, opacity 280ms ease;

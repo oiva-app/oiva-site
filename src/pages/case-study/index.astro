@@ -1,24 +1,25 @@
 ---
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import { withBase } from "../../lib/urls";
+import { getEntry, render } from "astro:content";
+import ContentPageLayout from "../../components/ContentPageLayout.astro";
+import { toSinglePageSidebarPages } from "../../lib/content";
 
-const target = withBase("/case-study/overview/");
+const entry = await getEntry("caseStudy", "index");
+
+if (!entry) {
+  throw new Error("Missing case study index content entry.");
+}
+
+const { Content, headings } = await render(entry);
+const pages = toSinglePageSidebarPages("caseStudy", headings);
+const currentPageId = pages[0]?.id ?? entry.id;
 ---
 
-<BaseLayout title="Redirecting" description="Redirecting to the Oiva case study overview.">
-  <meta slot="head" http-equiv="refresh" content={`0; url=${target}`} />
-  <link slot="head" rel="canonical" href={target} />
-  <section class="redirect-page">
-    <p>
-      Redirecting to <a href={target}>Case Study Overview</a>.
-    </p>
-  </section>
-</BaseLayout>
-
-<style>
-  .redirect-page {
-    margin: 0 auto;
-    max-width: 720px;
-    padding: var(--space-section) var(--space-page) 0;
-  }
-</style>
+<ContentPageLayout
+  section="caseStudy"
+  title={entry.data.title}
+  description={entry.data.description}
+  currentPageId={currentPageId}
+  pages={pages}
+>
+  <Content />
+</ContentPageLayout>

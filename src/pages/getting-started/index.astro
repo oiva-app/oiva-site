@@ -1,24 +1,25 @@
 ---
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import { withBase } from "../../lib/urls";
+import { getEntry, render } from "astro:content";
+import ContentPageLayout from "../../components/ContentPageLayout.astro";
+import { toSinglePageSidebarPages } from "../../lib/content";
 
-const target = withBase("/getting-started/overview/");
+const entry = await getEntry("gettingStarted", "index");
+
+if (!entry) {
+  throw new Error("Missing getting started index content entry.");
+}
+
+const { Content, headings } = await render(entry);
+const pages = toSinglePageSidebarPages("gettingStarted", headings);
+const currentPageId = pages[0]?.id ?? entry.id;
 ---
 
-<BaseLayout title="Redirecting" description="Redirecting to the Oiva getting started overview.">
-  <meta slot="head" http-equiv="refresh" content={`0; url=${target}`} />
-  <link slot="head" rel="canonical" href={target} />
-  <section class="redirect-page">
-    <p>
-      Redirecting to <a href={target}>Getting Started Overview</a>.
-    </p>
-  </section>
-</BaseLayout>
-
-<style>
-  .redirect-page {
-    margin: 0 auto;
-    max-width: 720px;
-    padding: var(--space-section) var(--space-page) 0;
-  }
-</style>
+<ContentPageLayout
+  section="gettingStarted"
+  title={entry.data.title}
+  description={entry.data.description}
+  currentPageId={currentPageId}
+  pages={pages}
+>
+  <Content />
+</ContentPageLayout>

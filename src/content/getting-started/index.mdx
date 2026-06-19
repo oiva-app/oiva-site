@@ -1,0 +1,136 @@
+---
+title: "Getting Started"
+description: "A single-page guide for setting up, running, and troubleshooting Oiva."
+order: 1
+sidebarLabel: "Getting Started"
+---
+
+<span class="draft-label">Draft placeholder</span>
+
+## Getting Started Overview
+
+This page will orient evaluators before they install or run Oiva locally.
+
+### What You Will Set Up
+
+The final version will summarize the services, credentials, and local dependencies needed to run the demo.
+
+### What You Will See
+
+Readers should understand the expected alert flow, investigation progress, and final report before starting setup.
+
+### What Is Out of Scope
+
+This guide is for evaluation and local understanding, not full production operator documentation.
+
+## Prerequisites
+
+This page will list the required tools and accounts once setup details are finalized.
+
+### Local Tools
+
+The final checklist will cover runtime, package manager, Docker, database tooling, and any command-line utilities.
+
+### Service Accounts
+
+Oiva requires access to provider APIs and external systems. The final version will list the exact account requirements.
+
+### Credentials
+
+Credential setup will be documented carefully so users know which values are required before running the app.
+
+## Local Setup
+
+This page will become the step-by-step local setup guide.
+
+### Clone and Install
+
+The final copy will show how to clone the project, install dependencies, and verify the expected runtime versions.
+
+### Environment File
+
+This section will explain how to create the local environment file and where each required value comes from.
+
+### Database and Migrations
+
+The setup guide will cover local Postgres, Docker Compose, migrations, and initial verification.
+
+## Configuration
+
+This page will document the configuration needed for Oiva to investigate alerts.
+
+### LLM Provider
+
+The final version will list supported provider settings and the minimum values required for a local evaluation.
+
+### GitHub Access
+
+Repository access requires a token with the correct scope. This section will describe that requirement once finalized.
+
+### Slack and Observability
+
+The final guide will cover Slack delivery settings and Honeycomb-style alert/telemetry configuration.
+
+## Alert Webhook
+
+This page will document how an alert reaches Oiva.
+
+### Payload Shape
+
+The final version will describe the expected alert payload and show a realistic example.
+
+### Webhook Endpoint
+
+This section will explain where to send alerts in local development and deployed environments.
+
+### Verification
+
+The guide will include ways to confirm the alert was received and an investigation was started.
+
+## Running Oiva
+
+This page will describe the actual run commands and expected service behavior.
+
+### Start Services
+
+The final copy will show the commands for starting Oiva and any local dependencies.
+
+### Trigger an Investigation
+
+This section will explain how to submit a test alert or use a configured alert source.
+
+### Watch Progress
+
+Users should know which logs, Slack updates, and traces indicate that the system is working.
+
+## Reading Results
+
+This page will explain how to interpret Oiva's output.
+
+### Slack Updates
+
+The final version will show the kind of live progress updates users should expect.
+
+### Final Report
+
+This section will describe report structure, evidence, caveats, and recommended next actions.
+
+### Investigation Trace
+
+The guide will explain what diagnostic traces or stored artifacts are available for review.
+
+## Troubleshooting
+
+This page will collect common failure modes once setup details are stable.
+
+### Setup Problems
+
+The final copy will cover missing dependencies, invalid credentials, and database startup issues.
+
+### Runtime Problems
+
+This section will describe common investigation failures and how to identify their source.
+
+### Getting Unblocked
+
+The troubleshooting guide will point users to logs, configuration checks, and relevant project documentation.
