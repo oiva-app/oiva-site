@@ -104,13 +104,11 @@
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-card);
-    display: grid;
-    gap: var(--space-sm);
-    grid-template-rows: 2.25rem minmax(0, 1fr);
     max-height: calc(100dvh - (2 * var(--space-md)));
     max-width: calc(100vw - (2 * var(--space-md)));
     overflow: hidden;
     padding: var(--space-md);
+    position: relative;
     width: fit-content;
   }
 
@@ -125,8 +123,10 @@
     font: inherit;
     height: 2.25rem;
     justify-content: center;
-    margin-left: auto;
     padding: 0;
+    position: absolute;
+    right: calc(var(--space-md) + var(--space-sm));
+    top: calc(var(--space-md) + var(--space-sm));
     width: 2.25rem;
     z-index: 1;
   }
@@ -146,7 +146,7 @@
     display: block;
     height: auto;
     justify-self: center;
-    max-height: calc(100dvh - (2 * var(--space-md)) - (2 * var(--space-md)) - 2.25rem - var(--space-sm));
+    max-height: calc(100dvh - (2 * var(--space-md)) - (2 * var(--space-md)));
     max-width: 100%;
     object-fit: contain;
     width: auto;
@@ -163,8 +163,13 @@
       padding: var(--space-sm);
     }
 
+    .figure-modal-close {
+      right: calc(var(--space-sm) + var(--space-xs));
+      top: calc(var(--space-sm) + var(--space-xs));
+    }
+
     .figure-modal-image {
-      max-height: calc(100dvh - (2 * var(--space-sm)) - (2 * var(--space-sm)) - 2.25rem - var(--space-sm));
+      max-height: calc(100dvh - (2 * var(--space-sm)) - (2 * var(--space-sm)));
     }
   }
 </style>
