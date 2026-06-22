@@ -190,6 +190,11 @@ function getHeadingHref(page: SectionPage, slug: string) {
   const getNestedPanelForItem = (item: HTMLElement) =>
     item.querySelector<PanelElement>("[data-nested-heading-panel]");
 
+  const normalizePathname = (pathname: string) => pathname.replace(/\/$/, "");
+
+  const isSamePathname = (url: URL) =>
+    normalizePathname(url.pathname) === normalizePathname(window.location.pathname);
+
   const initializeSectionAccordions = () => {
     document.querySelectorAll<HTMLElement>("[data-section-accordion]").forEach((accordion) => {
       const panels = Array.from(accordion.querySelectorAll<PanelElement>("[data-heading-panel]"));
@@ -262,7 +267,7 @@ function getHeadingHref(page: SectionPage, slug: string) {
 
         if (headingLink) {
           const linkUrl = new URL(headingLink.href);
-          const isSamePageLink = linkUrl.pathname === window.location.pathname;
+          const isSamePageLink = isSamePathname(linkUrl);
           const item = headingLink.closest<HTMLElement>("[data-heading-id]");
           const panel = item ? getNestedPanelForItem(item) : null;
 
@@ -282,7 +287,7 @@ function getHeadingHref(page: SectionPage, slug: string) {
         }
 
         const linkUrl = new URL(link.href);
-        const isSamePageLink = linkUrl.pathname === window.location.pathname;
+        const isSamePageLink = isSamePathname(linkUrl);
 
         if (!isSamePageLink) {
           return;
