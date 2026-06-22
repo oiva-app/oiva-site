@@ -14,13 +14,19 @@ const isSvg = typeof src !== "string" && src.format === "svg";
 ---
 
 <figure>
-  <a href={fullSizeHref}>
+  <button
+    class="figure-image-trigger"
+    type="button"
+    data-figure-modal-trigger
+    data-figure-modal-src={fullSizeHref}
+    data-figure-modal-alt={alt}
+  >
     {isSvg || typeof src === "string" ? (
       <img src={typeof src === "string" ? src : src.src} alt={alt} loading="lazy" />
     ) : (
       <Image src={src} alt={alt} widths={[640, 960, 1280, 1600]} sizes="(max-width: 900px) 100vw, 760px" />
     )}
-  </a>
+  </button>
   {caption && (
     <figcaption>
       <span>{caption}</span>
@@ -33,14 +39,29 @@ const isSvg = typeof src !== "string" && src.format === "svg";
     margin: var(--space-xl) 0;
   }
 
-  figure > a {
+  .figure-image-trigger {
     background: var(--color-surface);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-card);
+    color: inherit;
+    cursor: zoom-in;
     display: block;
+    font: inherit;
     overflow: hidden;
     padding: var(--space-sm);
+    text-align: inherit;
+    width: 100%;
+  }
+
+  .figure-image-trigger:hover,
+  .figure-image-trigger:focus-visible {
+    border-color: var(--color-primary);
+  }
+
+  .figure-image-trigger:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--color-primary) 32%, transparent);
+    outline-offset: 3px;
   }
 
   img {

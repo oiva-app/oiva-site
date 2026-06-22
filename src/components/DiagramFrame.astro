@@ -6,6 +6,8 @@ import TopographicLines from "./motifs/TopographicLines.astro";
 type Props = {
   title: string;
   caption?: string;
+  modalSrc?: ImageMetadata | string;
+  modalAlt?: string;
   variant?: "workflow" | "infrastructure" | "concept";
   motif?: "none" | "topographic" | "dots";
   class?: string;
@@ -14,10 +16,14 @@ type Props = {
 const {
   title,
   caption,
+  modalSrc,
+  modalAlt,
   variant = "workflow",
   motif = "none",
   class: className = "",
 } = Astro.props;
+
+const modalHref = typeof modalSrc === "string" ? modalSrc : modalSrc?.src;
 
 const frameClass = [
   "diagram-frame",
@@ -32,6 +38,8 @@ const frameClass = [
   title={title}
   eyebrow="Diagram"
   caption={caption}
+  modalSrc={modalHref}
+  modalAlt={modalAlt}
 >
   <div class="diagram-frame-body">
     {motif === "topographic" && <TopographicLines position="fill" density="quiet" />}

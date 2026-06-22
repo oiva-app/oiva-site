@@ -1,0 +1,170 @@
+<dialog class="figure-modal" data-figure-modal aria-label="Enlarged figure">
+  <div class="figure-modal-panel" data-figure-modal-panel>
+    <button class="figure-modal-close" type="button" data-figure-modal-close aria-label="Close enlarged figure">
+      <span aria-hidden="true">&times;</span>
+    </button>
+    <img class="figure-modal-image" data-figure-modal-image alt="" />
+  </div>
+</dialog>
+
+<script>
+  (() => {
+    const setupFigureModal = () => {
+      const modal = document.querySelector("[data-figure-modal]");
+
+      if (!(modal instanceof HTMLDialogElement) || modal.dataset.initialized === "true") {
+        return;
+      }
+
+      modal.dataset.initialized = "true";
+      window.figureModalController?.abort?.();
+
+      const controller = new AbortController();
+      window.figureModalController = controller;
+      const { signal } = controller;
+
+      const image = modal.querySelector("[data-figure-modal-image]");
+      const closeButton = modal.querySelector("[data-figure-modal-close]");
+      let activeTrigger = null;
+
+      const closeModal = () => {
+        if (modal.open) {
+          modal.close();
+        }
+      };
+
+      document.addEventListener("click", (event) => {
+        const trigger = event.target instanceof Element
+          ? event.target.closest("[data-figure-modal-trigger]")
+          : null;
+
+        if (!trigger || !(image instanceof HTMLImageElement)) {
+          return;
+        }
+
+        const src = trigger.getAttribute("data-figure-modal-src");
+
+        if (!src) {
+          return;
+        }
+
+        event.preventDefault();
+        activeTrigger = trigger instanceof HTMLElement ? trigger : null;
+
+        const alt = trigger.getAttribute("data-figure-modal-alt") || "";
+
+        image.src = src;
+        image.alt = alt;
+
+        modal.showModal();
+        closeButton instanceof HTMLElement && closeButton.focus();
+      }, { signal });
+
+      closeButton?.addEventListener("click", closeModal, { signal });
+
+      modal.addEventListener("click", (event) => {
+        if (event.target === modal) {
+          closeModal();
+        }
+      }, { signal });
+
+      modal.addEventListener("close", () => {
+        if (image instanceof HTMLImageElement) {
+          image.removeAttribute("src");
+          image.alt = "";
+        }
+
+        activeTrigger?.focus();
+        activeTrigger = null;
+      }, { signal });
+    };
+
+    setupFigureModal();
+    document.addEventListener("astro:page-load", setupFigureModal);
+  })();
+</script>
+
+<style>
+  .figure-modal {
+    background: transparent;
+    border: 0;
+    margin: auto;
+    max-height: 100dvh;
+    max-width: 100vw;
+    overflow: hidden;
+    padding: var(--space-md);
+  }
+
+  .figure-modal::backdrop {
+    background: color-mix(in srgb, var(--color-text) 72%, transparent);
+  }
+
+  .figure-modal-panel {
+    background: var(--color-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    display: grid;
+    gap: var(--space-sm);
+    grid-template-rows: 2.25rem minmax(0, 1fr);
+    max-height: calc(100dvh - (2 * var(--space-md)));
+    max-width: calc(100vw - (2 * var(--space-md)));
+    overflow: hidden;
+    padding: var(--space-md);
+    width: fit-content;
+  }
+
+  .figure-modal-close {
+    align-items: center;
+    background: var(--color-surface-raised);
+    border: 1px solid var(--border-subtle);
+    border-radius: 999px;
+    color: var(--color-text);
+    cursor: pointer;
+    display: inline-flex;
+    font: inherit;
+    height: 2.25rem;
+    justify-content: center;
+    margin-left: auto;
+    padding: 0;
+    width: 2.25rem;
+    z-index: 1;
+  }
+
+  .figure-modal-close:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+
+  .figure-modal-close span {
+    font-size: 1.5rem;
+    line-height: 1;
+    transform: translateY(-0.04em);
+  }
+
+  .figure-modal-image {
+    display: block;
+    height: auto;
+    justify-self: center;
+    max-height: calc(100dvh - (2 * var(--space-md)) - (2 * var(--space-md)) - 2.25rem - var(--space-sm));
+    max-width: 100%;
+    object-fit: contain;
+    width: auto;
+  }
+
+  @media (max-width: 700px) {
+    .figure-modal {
+      padding: var(--space-sm);
+    }
+
+    .figure-modal-panel {
+      max-height: calc(100dvh - (2 * var(--space-sm)));
+      max-width: calc(100vw - (2 * var(--space-sm)));
+      padding: var(--space-sm);
+    }
+
+    .figure-modal-image {
+      max-height: calc(100dvh - (2 * var(--space-sm)) - (2 * var(--space-sm)) - 2.25rem - var(--space-sm));
+    }
+  }
+</style>

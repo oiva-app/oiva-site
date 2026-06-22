@@ -7,6 +7,8 @@ type Props = {
   caption?: string;
   sourceLabel?: string;
   sourceHref?: string;
+  modalSrc?: string;
+  modalAlt?: string;
   variant?: "default" | "raised" | "outline";
   class?: string;
 };
@@ -17,6 +19,8 @@ const {
   caption,
   sourceLabel,
   sourceHref,
+  modalSrc,
+  modalAlt,
   variant = "default",
   class: className = "",
 } = Astro.props;
@@ -30,9 +34,21 @@ const {
     </header>
   )}
 
-  <div class="figure-card-body">
-    <slot />
-  </div>
+  {modalSrc ? (
+    <button
+      class="figure-card-body figure-card-modal-trigger"
+      type="button"
+      data-figure-modal-trigger
+      data-figure-modal-src={modalSrc}
+      data-figure-modal-alt={modalAlt ?? title ?? ""}
+    >
+      <slot />
+    </button>
+  ) : (
+    <div class="figure-card-body">
+      <slot />
+    </div>
+  )}
 
   {caption && (
     <DiagramCaption sourceLabel={sourceLabel} sourceHref={sourceHref}>
@@ -89,5 +105,23 @@ const {
   .figure-card-body {
     min-width: 0;
     position: relative;
+  }
+
+  .figure-card-modal-trigger {
+    background: transparent;
+    border: 0;
+    color: inherit;
+    cursor: zoom-in;
+    display: block;
+    font: inherit;
+    padding: 0;
+    text-align: inherit;
+    width: 100%;
+  }
+
+  .figure-card-modal-trigger:focus-visible {
+    border-radius: var(--radius-md);
+    outline: 3px solid color-mix(in srgb, var(--color-primary) 32%, transparent);
+    outline-offset: 3px;
   }
 </style>

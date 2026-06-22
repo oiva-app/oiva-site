@@ -1,0 +1,30 @@
+---
+type Props = {
+  class?: string;
+};
+
+const { class: className = "" } = Astro.props;
+---
+
+<div class:list={["figure-pair", className]}>
+  <slot />
+</div>
+
+<style>
+  .figure-pair {
+    display: grid;
+    gap: var(--space-md);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: var(--space-xl) 0;
+  }
+
+  .figure-pair :global(figure) {
+    margin: 0;
+  }
+
+  @media (max-width: 720px) {
+    .figure-pair {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
