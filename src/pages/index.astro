@@ -1,5 +1,6 @@
 ---
-import oivaBearLogo from "../assets/logo/oiva_bear_green.svg";
+import oivaLogoGreen from "../assets/logo/oiva_logo_green_01.svg";
+import oivaLogoWhite from "../assets/logo/oiva_logo_white_01.svg";
 import HomeHeroAtlasBackground from "../components/HomeHeroAtlasBackground.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { withBase } from "../lib/urls";
@@ -9,20 +10,17 @@ const description =
 ---
 
 <BaseLayout title="Oiva" bareTitle description={description}>
-  <link slot="head" rel="preconnect" href="https://fonts.googleapis.com" />
-  <link slot="head" rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link slot="head" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500&display=swap" />
   <section class="home-hero" aria-labelledby="home-title">
     <HomeHeroAtlasBackground />
     <div class="home-hero__inner">
       <div class="home-hero__visual" aria-hidden="true">
         <div class="home-hero__logo">
-          <img src={oivaBearLogo.src} alt="" loading="eager" decoding="async" />
+          <img class="home-hero__logo-mark home-hero__logo-mark-light" src={oivaLogoGreen.src} alt="" loading="eager" decoding="async" />
+          <img class="home-hero__logo-mark home-hero__logo-mark-dark" src={oivaLogoWhite.src} alt="" loading="eager" decoding="async" />
         </div>
       </div>
       <div class="home-hero__content">
-        <h1 id="home-title">Oiva</h1>
-        <p class="home-hero__summary">{description}</p>
+        <h1 id="home-title" class="home-hero__tagline">{description}</h1>
         <div class="button-row home-hero__actions" aria-label="Primary links">
           <a class="button button-primary" href={withBase("/case-study/")}>Case Study</a>
           <a class="button button-secondary" href={withBase("/get-started/manual-setup/")}>Get Started</a>
@@ -128,38 +126,39 @@ const description =
     z-index: 1;
   }
 
-  .home-hero__logo img {
+  .home-hero__logo-mark {
     display: block;
-    max-height: clamp(14rem, 38vw, 28rem);
+    max-height: clamp(18rem, 40vw, 31rem);
     object-fit: contain;
-    width: min(100%, 30rem);
+    width: min(100%, 25rem);
+  }
+
+  .home-hero__logo-mark-dark {
+    display: none;
+  }
+
+  :global([data-theme="dark"]) .home-hero__logo-mark-light {
+    display: none;
+  }
+
+  :global([data-theme="dark"]) .home-hero__logo-mark-dark {
+    display: block;
   }
 
   .home-hero__content {
-    background: var(--color-surface);
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-card);
     grid-column: 2;
     grid-row: 1;
     min-width: 0;
-    padding: clamp(var(--space-lg), 4vw, var(--space-2xl));
+    padding: clamp(var(--space-md), 3vw, var(--space-xl)) 0;
   }
 
-  .home-hero h1 {
-    font-family: 'Prompt', var(--font-sans);
-    font-size: clamp(4rem, 14vw, 9rem);
-    font-weight: 400;
+  .home-hero__tagline {
+    color: var(--color-text);
+    font-size: clamp(var(--text-xl), 4.2vw, 3.6rem);
+    font-weight: 700;
     letter-spacing: 0;
-    line-height: 0.9;
-    margin: 0;
-  }
-
-  .home-hero__summary {
-    color: var(--color-muted);
-    font-size: clamp(var(--text-md), 2vw, var(--text-lg));
-    line-height: 1.55;
-    margin: var(--space-lg) 0 var(--space-xl);
+    line-height: 1.1;
+    margin: 0 0 var(--space-xl);
     max-width: 44rem;
   }
 
@@ -330,16 +329,25 @@ const description =
     .home-hero__content {
       grid-column: 1;
       grid-row: 2;
-      padding: var(--space-lg);
+      padding: 0;
+      text-align: center;
     }
 
     .home-hero__logo {
-      justify-content: flex-start;
+      justify-content: center;
     }
 
-    .home-hero__logo img {
-      max-height: clamp(12rem, 34vw, 18rem);
-      width: min(100%, 22rem);
+    .home-hero__logo-mark {
+      max-height: clamp(14rem, 42vw, 20rem);
+      width: min(100%, 17rem);
+    }
+
+    .home-hero__tagline {
+      margin-inline: auto;
+    }
+
+    .home-hero__actions {
+      justify-content: center;
     }
 
     .home-steps {
@@ -356,9 +364,9 @@ const description =
       gap: var(--space-lg);
     }
 
-    .home-hero__logo img {
-      max-height: clamp(11rem, 48vw, 16rem);
-      width: min(100%, 18rem);
+    .home-hero__logo-mark {
+      max-height: clamp(13rem, 56vw, 17rem);
+      width: min(100%, 15rem);
     }
 
     .home-hero__actions,
