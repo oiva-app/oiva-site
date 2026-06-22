@@ -1,7 +1,6 @@
 import type { ImageMetadata } from "astro";
 import jonathanHeadshot from "../assets/team/jonathan-mcnair.png";
 import stevenHeadshot from "../assets/team/steven-valenziano.png";
-import tiiaHeadshot from "../assets/team/tiia-rikama.png";
 import valerieHeadshot from "../assets/team/valerie-racine.png";
 
 export type TeamMember = {
@@ -35,7 +34,6 @@ export const teamMembers: TeamMember[] = [
     name: "Tiia Rikama",
     location: "Los Altos, CA, United States",
     initials: "TR",
-    headshot: tiiaHeadshot,
     githubUrl: "https://github.com/tiiarikama",
     linkedinUrl: "https://www.linkedin.com/in/tiia-rikama-02b491239/",
   },
