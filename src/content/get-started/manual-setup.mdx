@@ -201,14 +201,17 @@ Apply the Terraform:
 terraform apply
 ```
 
-Terraform creates placeholder Secrets Manager secrets unless you provide existing secret ARNs. The deployment will not work until you populate those secrets and force a new deployment.
+This process could take up to 10 minutes or so. Let Terraform finish provisioning resources before continuing to the next step.
 
 ### Populate Secrets
 
-Add values for the runtime secrets after `terraform apply`.
-The required secrets include `HC_MCP_KEY`, `HC_SHARED_SECRET`, `GITHUB_PAT`, `SLACK_BOT_TOKEN`, `SLACK_SIGNING_SECRET`, and `HONEYCOMB_API_KEY`.
+Terraform creates placeholder Secrets Manager secrets unless you provide existing secret ARNs. The deployment will not work until you populate those secrets and force a new deployment.
 
-LLM provider API key secrets are configured separately with `llm_provider_secret_env_vars`. The default deployment uses OpenAI models. If you configure non-OpenAI provider(s), include each provider's expected environment variable name:
+Add values for the runtime secrets after `terraform apply`.
+The required secrets include `HONEYCOMB_MCP_KEY`, `HONEYCOMB_SHARED_SECRET`, `GITHUB_PAT`, `SLACK_BOT_TOKEN`, `SLACK_SIGNING_SECRET`, and `HONEYCOMB_API_KEY`.
+
+LLM provider API key secrets are configured separately with `llm_provider_secret_env_vars`. The default deployment uses OpenAI models. If you configure non-OpenAI provider(s), include each provider's expected environment variable name.
+
 View the secret ARNs Terraform created:
 ```bash
 terraform output secret_arns
@@ -259,6 +262,35 @@ If you configured `knowledge_base_s3_prefix`, upload files under that prefix.
 aws s3 sync ./knowledge-base "s3://$(terraform output -raw knowledge_base_bucket)/your-prefix/"
 ```
 
+### Connect External Services
+
+After `terraform apply`, use Terraform outputs for the public webhook URLs:
+
+```bash
+terraform output -raw honeycomb_alert_webhook_url
+terraform output -raw slack_action_webhook_url
+```
+
+#### Honeycomb
+
+Create or update a Honeycomb webhook recipient:
+
+- URL: output from `terraform output -raw honeycomb_alert_webhook_url`
+- method: `POST`
+- payload: use Oiva's [Honeycomb alert webhook payload template](https://github.com/oiva-app/oiva/blob/main/README.md#alert-webhook-payload-format)
+- secret: use the same value you stored as `HONEYCOMB_SHARED_SECRET`
+
+In production, Oiva rejects Honeycomb webhook requests whose secret does not match `HONEYCOMB_SHARED_SECRET`. The secret may be supplied either as the `X-Honeycomb-Webhook-Token` header or as the `secret` field in the payload body. The payload template uses the body field. If both are present, the header takes precedence.
+
+#### Slack
+
+Oiva posts incident reports and live updates to a Slack channel. Create a Slack app for your workspace and:
+
+- Add the **`chat:write`** bot scope, install the app, and copy the **Bot User OAuth token** (`SLACK_BOT_TOKEN`).
+- Copy the app's **Signing secret** (`SLACK_SIGNING_SECRET`) — used to verify Slack interactions, like user ratings and incident retries.
+- Enable **Interactivity** and set the request URL to the output from `terraform output -raw slack_action_webhook_url`.
+- Invite the bot to the target channel and use its **channel ID** as `slack_channel_id` in `terraform.tfvars`.
+
 </Steps>
 
 ## Verify the Deployment
@@ -278,8 +310,10 @@ The service should be `ACTIVE`. For the default deployment, `desiredCount` is 1 
 
 During a redeployment, it is normal for ECS to briefly show more than one task. A new task may be starting while the old task is still winding down. Wait a few minutes and check again before treating this as a problem.
 
-List the running ECS tasks:
 ### Running Task Check
+
+List the running ECS tasks:
+
 ```bash
 aws ecs list-tasks \
   --cluster "$(terraform output -raw ecs_cluster_name)" \
@@ -309,8 +343,8 @@ In the logs, check that:
 
 ### Functionality Check
 Then verify the external integrations:
-- Honeycomb sends alerts to honeycomb_alert_webhook_url.
-- Slack sends interactions to slack_action_webhook_url.
+- Honeycomb sends alerts to `$(terraform output -raw honeycomb_alert_webhook_url)`.
+- Slack sends interactions to `$(terraform output -raw slack_action_webhook_url)`.
 - Oiva can read the configured GitHub repositories and knowledge-base S3 files.
 - Oiva posts the expected Slack investigation message or report.
 - Oiva traces arrive in Honeycomb through the ADOT sidecar.
