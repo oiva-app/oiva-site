@@ -1,170 +1,293 @@
 ---
 title: "Case Study"
-description: "A single-page case study covering Oiva's problem domain, design, demo flow, infrastructure, and future work."
+description: "A case study covering Oiva's problem domain, design, and future work."
 order: 1
 sidebarLabel: "Case Study"
 ---
 
-<span class="draft-label">Draft placeholder</span>
-
 ## Overview: What is Oiva?
 
-This page will introduce Oiva as an open-source, self-hosted service for AI-assisted incident investigation. The final copy will explain what problem Oiva addresses, how it fits into an engineering team's existing tools, and what readers should expect from the case study.
+Oiva is a self-hosted, open-source service for AI-assisted incident investigation. When a production alert fires, Oiva authenticates that alert and launches an investigation that queries the team’s existing observability stack and Git repositories. Oiva then returns a structured report with findings and a supporting evidence trail, easing the on-call engineer’s cognitive load and aiming to reduce time-to-resolution by compressing the initial context-gathering phase.
 
-### What Oiva Does
+<span className="asset-placeholder">Image placeholder: 310 - Before Oiva</span>
 
-Oiva receives an alert, starts an investigation, gathers evidence from observability and codebase sources, and returns a report that is easier for a team to act on than an isolated notification.
-
-### Why It Exists
-
-The final version will describe the gap between alert delivery and practical incident understanding. This placeholder gives the layout enough real structure to exercise article width, heading links, and navigation flow.
-
-### What This Case Study Covers
-
-The case study will move from the problem domain through the design decisions, demo flow, infrastructure choices, and future work.
+<span className="asset-placeholder">Image placeholder: 311 - After Oiva</span>
 
 ## Problem Domain
 
-This page will describe the operational problem Oiva addresses: teams already receive alerts, but alerts often leave the next investigation step unclear.
+Nearly all production systems are complex and distributed and can fail in unforeseeable ways. A timeout in one service can trigger a retry storm two network hops upstream, a latency spike originating in a database connection pool can surface in a different service, or a small code change in an error handler can produce a type error that bubbles up the call chain and produces a sudden spike in 500 errors. In production, the symptoms of an incident and its underlying cause are often spread across a system, making it especially challenging for on-call engineers, who, when an alert fires at 2 a.m., have to quickly determine what broke and where before they can even start thinking about how to fix it.
 
-### Alert Context
+<span className="asset-placeholder">Image placeholder: 320 - A complex distributed system. Source: https://github.com/open-telemetry/opentelemetry.io/blob/main/content/en/docs/demo/architecture.md</span>
 
-Production alerts are useful only when responders can quickly understand what changed, what is affected, and what evidence supports the next action.
+That initial investigation can be the most challenging and time-consuming part of incident response. Before any engineer can even form a hypothesis about what happened, they have to query their telemetry, scan dashboards, and correlate different signals across services. The tools they’ll reach for first will be their observability stack, such as Honeycomb, SigNoz, or Datadog, which stores and surfaces telemetry.
 
-### Investigation Overhead
+But these tools are limited in how they can assist engineers in investigating incident alerts. This is true whether the team adopts the more traditional approach to observability, with its emphasis on the “three pillars” of metrics, logs, and traces, or the newer paradigm that supports a wide-event model. Within the former, a team’s metrics can indicate that something is wrong in the system, logs can provide additional details of the issue, and traces can reconstruct a request’s path. Still, the engineer has to manually stitch all of these signals together to build a coherent story about what is happening.
 
-The final copy will explain the repeated work involved in jumping between telemetry, repositories, dashboards, and communication tools during early incident response.
+<span className="asset-placeholder">Image placeholder: 301 - Trying to make sense of an alert at 2 a.m.</span>
 
-### Useful Automation
+<span className="asset-placeholder">Image placeholder: 325 - Example of an observability dashboard: powerful and helpful, but sometimes overwhelming. Especially at 2 a.m.</span>
 
-Oiva's target is not replacing engineers. It is reducing the cost of gathering and organizing initial evidence.
+The newer paradigm consolidates these different signals into a single source of truth: wide, high-cardinality events that can be sliced and queried along any dimension. However, the engineer can be overwhelmed by the task of deciding how to efficiently and effectively query that vast data store while production is down and the clock is ticking. Thus, whether the team’s telemetry is fragmented across different signal types or unified in a massive data store, the initial investigation still imposes a substantial cognitive burden on the on-call engineer.
+
+AI SRE assistants are a new category of agentic tools that aim to alleviate this burden and assist on-call engineers when they receive alerts about incidents in production systems. Many solutions propose putting LLM-based agents to work on the initial investigation process, so by the time the on-call engineer wakes from their slumber and reaches for their laptop, the agent has already parsed the alert, queried the telemetry, correlated initial evidence streams, and proposed the next steps. These agents are part of the fast-growing space of AI developer tools, each adopting different approaches and targeting different types of users. We’ll look at some of the existing solutions next.
 
 ## Existing Solutions
 
-This page will compare Oiva with existing product categories and explain the design space that shaped the project.
+AI SRE developer tools have grown quickly in 2026, and many current products can be categorized into three broad categories: standalone autonomous agents built specifically to investigate production incidents, AI agents native to the observability platform they’re built on, and incident management platforms that have extended into AI-assisted investigation tools. Each of these approaches reveals strengths and limitations.
 
-### Standalone Autonomous Agents
+### Standalone Autonomous AI SRE Agents
 
-Some products approach incident response as a broad autonomous SRE workflow. The final version will contrast those systems with Oiva's narrower investigation-reporting scope.
+The most direct analogs to Oiva are autonomous, purpose-built investigative agents. [Cleric](https://cleric.ai/) provides an illustrative example: when an alert fires, their agents investigate a team’s production issues using the team’s existing observability stack. They have read-only access to investigate across a team’s database metrics, network traffic, application logs, and system resources. They then surface their findings in Slack, with links to supporting evidence and a confidence score, learning from feedback across investigations over time, using customer-specific knowledge graphs and their deployment history. Because their agents adopt a continuous learning approach, their system requires onboarding and integration with their customers’ systems, but it can integrate with various observability services, such as Datadog, Grafana, and Prometheus.
 
-### Observability Platform Assistants
+Other entrants in this category include [Resolve AI](https://resolve.ai/) and [Traversal](https://www.traversal.com/), commercial products that aim to provide an always-ready agent to triage production alerts and assist on-call engineers. More recently, [IncidentFox](https://www.incidentfox.ai/) launched an open-source alternative that automatically investigates incidents and delivers reports to Slack. They also offer a managed SaaS model.
 
-Observability-native tools can provide rich context inside a platform, but they may be tied to one vendor's data model and user interface.
+*Trade-offs:* The commercial options listed above are primarily closed SaaS, so a team would have to adopt the agent as a managed service and accept that they cannot access the agent’s reasoning or integrations beyond the vendor API.
 
-### Incident Management Tools
+### Observability Platform-native Agents
 
-Incident platforms help teams coordinate response. Oiva focuses earlier in the flow by enriching alerts before responders spend time manually collecting context.
+A second category includes agents that are built directly into observability platforms. [Datadog’s Bits AI SRE agent](https://www.datadoghq.com/product/ai/bits-ai-sre/) is the clearest example. The moment an alert fires, it reads the telemetry stored on its platform, draws on the team’s runbooks and systems, and explores several paths before converging on a likely root cause to hand off to the engineer. [Dynatrace’s Davis AI](https://docs.dynatrace.com/docs/semantic-dictionary/model/davis) agent works similarly by taking a comparable platform-native approach. Another variant of this idea is Canvas, the AI-assisted investigator built into Honeycomb’s platform, which helps an engineer investigate their team’s stored data but cannot access a team’s codebase or documentation.
+
+*Trade-offs:* These agents have easy, immediate access to data given their direct integration into the observability platform. This strength also represents their limitation: their investigative power is bounded by the vendor’s ecosystem, so teams have to commit to a new platform or become even more deeply locked into their existing vendor choice. Teams that build their own observability backend cannot leverage this group of tools.
+
+### Incident Management Platforms with AI-Assisted Investigations
+
+The third group represents the coordination with a team’s incident response and management workflow. For example, [incident.io](https://incident.io/ai-sre) began as an incident coordination and management platform and later added investigations that can run parallel searches across a team’s alerts, telemetry, codebase, and incident history, delivering actionable findings. [Rootly](https://rootly.com/) is another competitor in this category that first developed response coordination and later integrated investigation assistance.
+
+*Trade-offs:* Because Incident.io and Rootly are both proprietary, hosted platforms, their agentic tool offerings will be most compelling to teams that have already adopted these platforms to manage their incident response workflows.
+
+Taken together, these existing solutions validate the main idea behind Oiva – an agent that investigates the moment an alert is fired and provides the on-call engineer with a structured, evidence-backed starting point - as one that is being pursued by many well-resourced teams. The demand for these tools is also evident in other organizations, such as Pinterest, which built a bespoke internal version of an AI investigative agent named [Tricorder](https://www.zenml.io/llmops-database/autonomous-observability-with-ai-agents-and-model-context-protocol), presumably because they could not find a simple, off-the-shelf solution that met their needs.
 
 ## Introducing Oiva
 
-This page will introduce the Oiva system and explain the high-level interaction between alerts, agents, telemetry, repositories, and Slack reports.
+Oiva is a self-hosted, open-source incident investigation agent. When a production alert is triggered, Oiva receives the alert via a webhook, authenticates it, and orchestrates an investigation into the team’s observability data and relevant codebase. The agent then produces and delivers a structured report to a dedicated Slack channel. The final report includes a hypothesis about the root cause, the evidence trail supporting it, and a clear set of next steps. Teams also receive live updates on ongoing investigations via Slack and can download a full report on the incident after the agent completes its investigation.
 
-### Core Flow
+<span className="asset-placeholder">Image placeholder: 101 - Vendor-neutral overview of Oiva</span>
 
-An alert arrives through a webhook, Oiva launches an investigation, and the team receives live updates plus a final evidence-backed report.
+<span className="asset-placeholder">Image placeholder: 102 - Oiva, supporting Honeycomb as the Observability platform, and Slack as the report endpoint</span>
 
-### Primary Inputs
+Oiva’s aim is not to replace the engineer’s judgment but to compress the slowest and often most stressful part of incident response: the initial scramble for context.
 
-The first implementation integrates with observability data and Git repository context. Final copy will clarify which inputs are required and which are planned.
+<span className="asset-placeholder">Table placeholder: comparison table ([doc](https://docs.google.com/document/d/1LMYOjXMD25Ku10872ISaq7WrthZ-VB2Xzmp0iFPp_0o/edit?tab=t.0), [HTML](https://drive.google.com/file/d/1md2aKfN8760sIzHd2MiwKwiCtsSAWW2C/view))</span>
 
-### Primary Outputs
+The existing solutions surveyed above illustrate the growing demand for agentic tools that can help engineers investigate production incidents. Oiva offers a specifically scoped, open-source solution defined by the following three commitments: First, our prototype is built on the wide-event, high-cardinality [observability model](https://www.oreilly.com/library/view/observability-engineering/9781492076438/), treating rich, structured events as the primary target for investigation. Second, we treat evaluation as a primary concern so we can answer questions not only about what the agent investigates or when it does so, but also about *how* *well* it does so. Third, our architecture can be extended rather than consumed as a service.
 
-Oiva's output is a structured incident report designed to be useful to humans, not a hidden internal agent trace.
+Oiva is built for on-call engineers and small to midsize platform teams who cannot justify or don’t want to be locked into a specific commercial AI SRE platform. Because it’s open-source and self-hostable, it can serve teams with sensitive data customization needs that managed services may not easily provide, as well as teams who prefer a transparent agent they can inspect and extend to fit their needs.
 
 ## Demo / Walkthrough
 
-This page will walk through the demo scenario once final screenshots and copy are ready.
-
-### Triggering an Alert
-
-The demo begins with an alert payload that represents a production signal requiring investigation.
-
-### Following the Investigation
-
-The final walkthrough will show how Oiva reports progress while collecting telemetry and code context.
-
-### Reading the Report
-
-The final section will explain how the report presents findings, evidence, uncertainty, and suggested next steps.
+- Video or “scrollytelling”
+- <span className="asset-placeholder">Diagram placeholder: workflow from alert ingestion to report delivery</span>
 
 ## Design Decisions & Trade-offs
 
-This page will collect the main decisions and trade-offs from the case study draft. The first structural version keeps these topics together unless the page later becomes too long.
-
 ### Agent Design
 
-At the core of Oiva’s incident workflow is the investigation phase, the agentic process surrounded by the application’s deterministic edges. It encompasses two specialized domains: querying and interpreting telemetry data and examining the user’s codebase and Git history. Oiva then synthesizes the findings into a cohesive hypothesis with actionable next steps. ThisThe phase poses a central design challenge and directly 
-affects the quality of Oiva’s incident reports. The ask is big: the agent must be built to reason reliably about an open-ended alert, investigate each domain effectively while sticking to various specialized instruction sets, and synthesize surfaced data accurately, minimizing hallucinations as the investigation context grows. 
+At the core of Oiva’s incident workflow is the investigation phase, the agentic process surrounded by the application’s deterministic edges. It encompasses two specialized domains: querying and interpreting telemetry data and examining the user’s codebase and Git history. Oiva then synthesizes the findings into a cohesive hypothesis with actionable next steps. This phase poses a central design challenge and directly affects the quality of Oiva’s incident reports. The ask is big: the agent must be built to reason reliably about an open-ended alert, investigate each domain effectively while sticking to various specialized instruction sets, and synthesize surfaced data accurately, minimizing hallucinations as the investigation context grows.
 
-### Multi-Agent System
+<span className="asset-placeholder">Image placeholder: 710 - Overview of Oiva’s logical internals.</span>
 
-Oiva is a multi-agent system rather than a single general-purpose agent. An early prototype took the latter approach, offering simplicity and cost-effectiveness by minimizing LLM calls within a single loop. Its limits became apparent as we expanded domain-specific capabilities. The tight coupling of components within a single agent made it much harder to develop, scope, and test new additions. Thus, we transitioned Oiva to the current multi-agent system, in which a supervisor and specialized subagents split responsibilities. A separate report agent sits downstream of the investigation step, rendering relevant findings into Oiva’s main user-facing deliverable –- the incident report.  
+#### Multi-Agent System
+
+Oiva is a multi-agent system rather than a single general-purpose agent. An early prototype took the latter approach, offering simplicity and cost-effectiveness by minimizing LLM calls within a single loop. Its limits became apparent as we expanded domain-specific capabilities. The tight coupling of components within a single agent made it much harder to develop, scope, and test new additions. Thus, Oiva transitioned to a system in which a supervisor and specialized subagents split responsibilities. A separate report agent sits downstream of the investigation step, rendering relevant findings into Oiva’s main user-facing deliverable – the incident report.
+
+<span className="asset-placeholder">Image placeholder: 751 - Simple but ineffective: one agent is responsible for everything and good at nothing</span>
+
+<span className="asset-placeholder">Image placeholder: 752 - Somewhat more effective: simpler prompts and conversation histories allow the two separate agents to be more effective</span>
+
+<span className="asset-placeholder">Image placeholder: 753 - Most effective: Supervisor Agent owns oversight and QC, delegates tasks to subagents, and passes findings to Report Agent, which packs everything up for the humans</span>
+
+The supervisor agent owns the investigation as a whole. It interprets the incoming alert and orchestrates the investigation flow by delegating tasks to its subagents. The supervisor never queries telemetry or source code directly and has no access to the domain-specific tools. Instead, it calls the relevant subagents as needed and synthesizes their findings into a hypothesis, refining it over the course of the investigation to form an accurate analysis.
+
+Each subagent is responsible for one investigation domain and operates within the scope of its specialized context and tooling upon delegation from the supervisor. The telemetry agent queries and interprets observability data. It identifies anomalies and affected services and endpoints and narrows down the incident’s timeframe. The codebase agent examines the user’s source code and recent change history to detect code-related culprits. When it finishes, each subagent returns a summary of its findings to the supervisor for further analysis.
+
+Beyond separating responsibilities to simplify development and keep instruction sets focused, the multi-agent design addresses other limitations of single-agent architectures. These include context management and switching issues, as well as error propagation. Each is central to the design problem Oiva presents.
+
+If a single agent held the alert, all instructions and tools, every query and raw result, all inspected files, and the reasoning logic in its context simultaneously, its analysis would likely degrade as it sifted through irrelevant information within a growing context window. Since Oiva assigns each sub-investigation to a specialized agent, raw investigation data is contained within that subagent, and unnecessary data is less likely to leak into the broader investigative context. This approach is consistent with [research](https://arxiv.org/pdf/2502.08224) on multi-agent systems, which suggests that single-agent architectures lead to context window management failures that multi-agent designs can mitigate.
+
+[Research](https://link.springer.com/article/10.1007/s40747-025-02096-0) also indicates that multi-agent systems minimize the risk of an early mistake propagating throughout the investigation, reducing the likelihood of hallucinations. Such findings ground Oiva’s design: the supervisor agent acts as a reasoning checkpoint that weighs surfaced data against its collected evidence and re-queries subagents when clarification is needed.
+
+Similarly, instead of folding report generation into the supervisor agent or assigning the report agent as its subagent, Oiva separates formatting-related tasks from the investigation. Decoupling the two improves development and independent testing, keeps instructions focused, and limits the report generation context to the final synthesized findings.
+
+#### Limitations & Tradeoffs of Multi-Agent Systems
+
+A multi-agent system has limitations worth surfacing. Spreading the investigation across specialized agents results in more LLM calls than a single-agent design, increasing costs in latency and token usage. For Oiva, this is an acceptable tradeoff. On average, Oiva delivers a report within 5 minutes of receiving an alert, comfortably within the time it takes an engineer to become aware of an issue, reach their environment, and start troubleshooting. Those extra LLM calls also buy Oiva the depth that an effective incident report depends on. The quality of both the sub-investigations and the supervisor’s synthesis shapes the hypothesis’s accuracy and the final report’s detail.
+
+Better context isolation has a flip side: the data must flow across the boundary between agents. Context window management is a dial we tune to balance minimizing context bloat against data loss between agent calls. Oiva handles this with a bloat-reducing approach by limiting the message history the supervisor passes down, capping agent iterations at a configurable maximum, and returning only curated summaries to the supervisor. The consequence is that evidence can be lost. Once a subagent delegation ends, Oiva’s supervisor loses access to the raw results for that specific sub-investigation. It can only reason about what the subagent handed back, and re-query the subagent if it deems those findings are unclear.
+
+To make subagent behavior less opaque, we implemented a partial Investigation Trace feature that surfaces details about subagent behavior in Oiva’s final report. We also instrumented Oiva for observability, providing deeper insight into its investigation runs and using evaluation strategies to analyze agent behavior, data flow, and the quality of Oiva’s reports (see Evals & Testing section). Next, we focus on the key decisions when designing the two subagents.
+
+#### The Telemetry Subagent
+
+##### Investigation Tools
+
+Our ideal for Oiva is to offer vendor-neutral adaptability across a range of observability backends, many of which offer MCP (Model Context Protocol) servers for connecting LLM agents to external tools and data. We leveraged Honeycomb’s MCP server to equip Oiva’s telemetry subagent with specialized tools for querying and analyzing users’ observability data. To guide the agent’s proper use of the tools, we built a custom method with which the agent grounds its investigation (see the Evals & Testing section below).
+
+##### System Prompt Guidance
+
+The subagent’s system prompt was designed to outline a runbook-like sequence for its telemetry investigation. It must first orient its search based on the triggered alert, then follow a statistics-first process to detect error rates and affected services or endpoints. The agent then breaks dominant error patterns into specific dimensions and correlates anomalous ones with a time window and change pattern.
+
+##### Surfacing Investigation Steps
+
+Like any investigation, LLM-powered or human, Oiva can make mistakes. AI-powered investigations often produce results that “look correct” but are subtly wrong due to insufficient supporting evidence. For example, if Oiva reports that an API call is the source of the error, but never consults a trace to confirm this hypothesis, the user will only learn about this oversight if they audit the investigation steps and conduct their own research to fill in the holes.
+
+We enable Oiva users to audit the investigation and view the actual query results Oiva consulted using an “investigation trace”:
+
+<span className="asset-placeholder">Image placeholder: 760 - A “tool wrapper” was used to create a custom tool for every tool provided by the Honeycomb MCP. This custom tool gathered the “tool use intent” from the LLM every time it invoked an MCP tool and processed the tool outputs to create a human-readable “investigation trace”, a.k.a. an ordered list of investigation steps</span>
+
+#### The Codebase Subagent
+
+To effectively investigate the user’s repositories, the codebase agent is equipped with:
+
+* a system prompt that describes how to investigate the codebase and examples of common bugs
+* a filesystem with a `knowledge-base/` directory containing architectural and operational information about the user’s application
+* a sandbox with a fresh clone of the user’s codebase, indexed for BM25 keyword search to rank files and snippets by relevance
+* LSP-based code intelligence for TypeScript, JavaScript, Python, Go, and Rust, enabling the agent to inspect symbols, definitions, references, and language-level errors using the same protocol as many code editors
+* tools to navigate the filesystem and issue shell commands
+* Mastra’s `WorkingMemory` feature to track and update the agent’s hypotheses and research in a token-efficient way
+
+##### Repository Authorization: PAT, OAuth, or GitHub App
+
+Oiva currently uses a GitHub fine-grained Personal Access Token (PAT). This is the simplest setup for the current version of Oiva: users grant read-only access to specific repositories, and Oiva clones them directly during an investigation. The main downside is that PATs are user-owned credentials, so rotation, revocation, and ownership become awkward if the user leaves or their permissions change. OAuth is better suited to a UI-based “Connect GitHub” flow, and access would still be tied to an individual user. Long-term, a GitHub App is the strongest production model because it gives Oiva its own installation identity, fine-grained repository permissions, short-lived tokens, and webhook support for future integrations with repository events or CI/CD workflows.
+
+##### GitHub MCP Server vs. Local Repositories
+
+We decided that locally stored repositories provide the most effective code inspection. Initially, Oiva used GitHub’s MCP server to inspect remote repositories. This kept the agent’s code simple, but introduced limitations. The agent made more invalid tool calls to GitHub MCP tools than to the local filesystem and Git tools. Remote inspection also added latency, increased the likelihood of failed requests, and exposed investigations to GitHub rate limits. Local repositories allow the agent to use more advanced tools, including LSP inspection, BM25 search, and direct Git history commands. This also opens a path toward future capabilities, such as testing suggested fixes and creating pull requests.
+
+<span className="asset-placeholder">Image placeholder: 701 - Option A: Explore code via the GitHub MCP. This option is simple, but slower and token-heavy</span>
+
+<span className="asset-placeholder">Image placeholder: 702 - Option B (selected): Pull code into a local Mastra workspace (sandbox) and explore with workspace tools. This option is faster, more effective, not limited by MCP rate limits, and more token-efficient</span>
+
+##### Investigation workspace isolation
+
+Because Oiva runs investigations on a long-running server rather than launching a fresh container per incident (see Infrastructure below), each investigation needs an isolated code sandbox. Oiva uses separate clones of the observed app because they provide stronger isolation and simpler cleanup. Alternatively, maintaining a shared clone and creating detached Git worktrees for each investigation would reduce clone time and storage usage, but they introduce shared Git state through the base clone, including update coordination, worktree metadata, cleanup, and concurrency concerns. For Oiva, this added complexity outweighs the performance benefits.
 
 ### Incident Report Delivery
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris placerat urna sed efficitur maximus. Praesent molestie lorem in tortor congue luctus. Quisque sed diam eget orci volutpat varius quis vitae lorem. Cras sed scelerisque dui. In luctus purus auctor, bibendum lacus eget, posuere ligula. Maecenas pharetra pretium ipsum, ac vehicula augue vestibulum eget. Sed a tincidunt enim. Cras nunc arcu, feugiat id sollicitudin non, volutpat eu metus. Nunc fringilla vestibulum est, ut luctus enim bibendum quis.
+The incident report is Oiva’s main user-facing deliverable, so how, where and when it is rendered shape the user experience. Oiva delivers its reports to a dedicated Slack channel created by the user. It posts an identifiable incident message as soon as the workflow begins and updates it in real time as the investigation progresses. Once the investigation concludes, Oiva renders the full report and posts a downloadable Markdown copy to the thread. Users can rate each report with a thumbs-up or thumbs-down and either retry the incident or close it directly from the message.
 
-Aliquam placerat nisl vitae magna tempus pharetra. Praesent consequat, ligula a bibendum semper, erat augue malesuada augue, in efficitur magna arcu eu nisi. Cras id interdum nulla. Vivamus viverra nisl vitae tortor convallis viverra. Pellentesque eleifend felis efficitur bibendum congue. Suspendisse placerat nulla mauris, nec tempor leo pharetra ac. Proin facilisis iaculis lacus, at malesuada orci. Aenean vitae ullamcorper velit. In et leo placerat, lacinia elit at, volutpat urna. Fusce consequat arcu ut odio pretium tristique. Aenean aliquet congue velit, vel aliquet eros viverra non. Sed vehicula venenatis nibh id finibus. Suspendisse dignissim arcu mauris, eget pulvinar arcu finibus vel. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+Oiva integrates with the user’s existing communication platform rather than providing a standalone dashboard for lower adoption friction. Engineers can quickly flag and read new incident reports without leaving the place where the incident conversation is likely already underway. Additionally, the dedicated incident channel doubles as a scannable history of past incidents.
 
-Suspendisse consequat est feugiat neque euismod, eu posuere ex molestie. Aenean elementum tellus in mauris faucibus bibendum. Sed elementum, ligula ac tincidunt sollicitudin, nibh tellus sollicitudin magna, at ornare urna nunc sed mi. Nam ullamcorper magna a massa sollicitudin aliquam. Nullam dapibus nulla quis nisi mattis, vitae elementum tellus molestie. Praesent eget massa quis nibh ultrices consectetur vitae in tortor. Mauris quis efficitur erat, nec finibus metus. Quisque feugiat eleifend nibh nec porta. Sed sodales libero sit amet viverra sollicitudin. Mauris eu lorem ac felis aliquet hendrerit ut sit amet magna. Aenean massa sapien, porttitor ac porta congue, semper dapibus ligula. Nullam elementum risus sit amet molestie molestie. Duis lectus odio, semper a felis ac, placerat.
 ### Code Architecture & Patterns
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris placerat urna sed efficitur maximus. Praesent molestie lorem in tortor congue luctus. Quisque sed diam eget orci volutpat varius quis vitae lorem. Cras sed scelerisque dui. In luctus purus auctor, bibendum lacus eget, posuere ligula. Maecenas pharetra pretium ipsum, ac vehicula augue vestibulum eget. Sed a tincidunt enim. Cras nunc arcu, feugiat id sollicitudin non, volutpat eu metus. Nunc fringilla vestibulum est, ut luctus enim bibendum quis.
+#### Mastra Framework
 
-Aliquam placerat nisl vitae magna tempus pharetra. Praesent consequat, ligula a bibendum semper, erat augue malesuada augue, in efficitur magna arcu eu nisi. Cras id interdum nulla. Vivamus viverra nisl vitae tortor convallis viverra. Pellentesque eleifend felis efficitur bibendum congue. Suspendisse placerat nulla mauris, nec tempor leo pharetra ac. Proin facilisis iaculis lacus, at malesuada orci. Aenean vitae ullamcorper velit. In et leo placerat, lacinia elit at, volutpat urna. Fusce consequat arcu ut odio pretium tristique. Aenean aliquet congue velit, vel aliquet eros viverra non. Sed vehicula venenatis nibh id finibus. Suspendisse dignissim arcu mauris, eget pulvinar arcu finibus vel. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+Building an autonomous investigation agent requires substantial boilerplate for features such as agent orchestration, workflows, custom tool invocation, and LLM wiring. We use Mastra, a TypeScript agent framework, as a scaffold for Oiva.
 
-Suspendisse consequat est feugiat neque euismod, eu posuere ex molestie. Aenean elementum tellus in mauris faucibus bibendum. Sed elementum, ligula ac tincidunt sollicitudin, nibh tellus sollicitudin magna, at ornare urna nunc sed mi. Nam ullamcorper magna a massa sollicitudin aliquam. Nullam dapibus nulla quis nisi mattis, vitae elementum tellus molestie. Praesent eget massa quis nibh ultrices consectetur vitae in tortor. Mauris quis efficitur erat, nec finibus metus. Quisque feugiat eleifend nibh nec porta. Sed sodales libero sit amet viverra sollicitudin. Mauris eu lorem ac felis aliquet hendrerit ut sit amet magna. Aenean massa sapien, porttitor ac porta congue, semper dapibus ligula. Nullam elementum risus sit amet molestie molestie. Duis lectus odio, semper a felis ac, placerat.
+Mastra provides storage for agent memory, workflow snapshots, traces, and eval results. Oiva’s domain data is separate from this storage and resides in its own RDS PostgreSQL instance, serving as the system of record for alerts, incidents, and reports. (We explain that choice in Data-related Decisions.) The two states have different lifecycles, so keeping them separate allows us to query and evolve the domain state independently of the framework.
+
+#### Hexagonal Ports & Adapters: Extensibility and Testability
+
+Oiva is built using the [Ports & Adapters pattern](https://alistair.cockburn.us/hexagonal-architecture) (also known as Hexagonal Architecture). We isolate the investigation core (i.e., the incident lifecycle and its orchestration) behind ports (interfaces), with external systems plugged in as adapters: Honeycomb as the telemetry source, Slack as the notifier, and Postgres for persistence. This pattern makes the app *extensible* and *testable*. Adding a new observability backend for webhook alerts (e.g., SigNoz or Datadog) means writing a single new intake adapter without touching the core. And because the app's core depends on interfaces, we can test its logic using in-memory fakes and build robust test suites.
+
 ### Data-related Decisions
 
-This section will explain what Oiva stores, what it treats as external evidence, and how report data supports later review.
+Oiva persists every alert and incident rather than running an in-memory investigation because the incoming stream of alerts presents three problems that a relational database solves cleanly.
+
+First, the observability backend might redeliver the *same* webhook alert on retries, so we record the vendor’s event ID and add a partial unique index on `(source, vendor_instance_id)` to prevent duplicate rows in our alerts table.
+
+Second, because the backend might evaluate triggers on a set schedule, a single 20-minute-latency event that causes a spike in 5** errors can trigger several webhook alerts. To prevent duplicate investigations, we extract each alert’s correlating fields (`trigger_name`, `dataset`, and `query_id`) and match each new alert against active incidents within a recent (configurable) time window. We then attach the alert to an existing incident rather than launching a parallel investigation.
+
+Third, immediately after returning a `202`, the handler dispatches the agent’s investigation workflow, which runs in the background. Because we persist the alert *before* dispatch, that work is recoverable in the event of a crash. The stored alert provides an idempotent receipt that we match to the correct incident. This recovery feature lets users reprocess an interrupted incident using the Retry button in Slack.
+
+Oiva uses PostgreSQL because we can extract what we query into typed relational columns while retaining raw vendor payloads and LLM-structured reports to maintain fidelity. Oiva stores *alerts* and *reports* associated with *incidents*, and our duration-tracking and correlation logic depend on queries across these entities. Postgres makes queries, like “find all alerts belonging to an incident still ‘investigating’”, straightforward. A document store like MongoDB either requires embedded data or relies on multi-collection lookups, which can introduce performance overhead. One advantage of a document store is its ease of storing both raw alert payloads and LLM-structured reports. But this is handled well by Postgres’s `jsonb` type, which maintains document-style flexibility without sacrificing relational integrity. Oiva supports both data shapes with a single Postgres instance.
 
 ### Evals & Testing
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris placerat urna sed efficitur maximus. Praesent molestie lorem in tortor congue luctus. Quisque sed diam eget orci volutpat varius quis vitae lorem. Cras sed scelerisque dui. In luctus purus auctor, bibendum lacus eget, posuere ligula. Maecenas pharetra pretium ipsum, ac vehicula augue vestibulum eget. Sed a tincidunt enim. Cras nunc arcu, feugiat id sollicitudin non, volutpat eu metus. Nunc fringilla vestibulum est, ut luctus enim bibendum quis.
+An autonomous incident-investigation agent is only worth running if its conclusions can be trusted, and the only way to earn that trust is to test it against incidents for which the true root cause is already known. Oiva is evaluated and tested against controlled environments that enable the injection of reproducible faults.
+The evaluations are derived from failure scenarios in two demo applications, each chosen to trade control against realism. The first is a purpose-built [three-services demo app](https://github.com/oiva-app/three-services-demo-app) (`gateway ⇒ orders ⇒ inventory`) with a runtime fault-injection layer. Its minimal topology provides precise control over what breaks and an unambiguous ground truth to grade against. The second is a fork of the [OpenTelemetry Astronomy Shop](https://github.com/oiva-app/opentelemetry-demo), a more complex, realistic multi-service storefront that tests the agent against the scale and noise of a production-like system. Together, they ground an eval dataset with scenarios ranging from clean, isolated signals to messier, more realistic incidents.
 
-Aliquam placerat nisl vitae magna tempus pharetra. Praesent consequat, ligula a bibendum semper, erat augue malesuada augue, in efficitur magna arcu eu nisi. Cras id interdum nulla. Vivamus viverra nisl vitae tortor convallis viverra. Pellentesque eleifend felis efficitur bibendum congue. Suspendisse placerat nulla mauris, nec tempor leo pharetra ac. Proin facilisis iaculis lacus, at malesuada orci. Aenean vitae ullamcorper velit. In et leo placerat, lacinia elit at, volutpat urna. Fusce consequat arcu ut odio pretium tristique. Aenean aliquet congue velit, vel aliquet eros viverra non. Sed vehicula venenatis nibh id finibus. Suspendisse dignissim arcu mauris, eget pulvinar arcu finibus vel. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+The experiments share a common design. We inject latency and error faults at the system level and in the application code, and each injection triggers a real Honeycomb alert to which Oiva responds by launching an investigation. To prevent the agent from finding shortcuts to the answers, the experiments include safeguards such as non-descriptive fault codenames, a hidden injection switch, and innocuous or misleading titles on branches and PRs to conceal the experiments.
 
-Suspendisse consequat est feugiat neque euismod, eu posuere ex molestie. Aenean elementum tellus in mauris faucibus bibendum. Sed elementum, ligula ac tincidunt sollicitudin, nibh tellus sollicitudin magna, at ornare urna nunc sed mi. Nam ullamcorper magna a massa sollicitudin aliquam. Nullam dapibus nulla quis nisi mattis, vitae elementum tellus molestie. Praesent eget massa quis nibh ultrices consectetur vitae in tortor. Mauris quis efficitur erat, nec finibus metus. Quisque feugiat eleifend nibh nec porta. Sed sodales libero sit amet viverra sollicitudin. Mauris eu lorem ac felis aliquet hendrerit ut sit amet magna. Aenean massa sapien, porttitor ac porta congue, semper dapibus ligula. Nullam elementum risus sit amet molestie molestie. Duis lectus odio, semper a felis ac, placerat.
-### Observability
+The value of the evals dataset lies not in the final pass/fail grade, but in the systematic blind spots that each run reveals. Each experiment provides new areas for improvement that feed back into the agent’s design, improving its performance in development and production.
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris placerat urna sed efficitur maximus. Praesent molestie lorem in tortor congue luctus. Quisque sed diam eget orci volutpat varius quis vitae lorem. Cras sed scelerisque dui. In luctus purus auctor, bibendum lacus eget, posuere ligula. Maecenas pharetra pretium ipsum, ac vehicula augue vestibulum eget. Sed a tincidunt enim. Cras nunc arcu, feugiat id sollicitudin non, volutpat eu metus. Nunc fringilla vestibulum est, ut luctus enim bibendum quis.
+<span className="asset-placeholder">Image placeholder: 550 - Before implementing a formal Evals system, it was difficult to gauge the quality of the agent’s output in absolute terms or relative to previous agent investigations</span>
 
-Aliquam placerat nisl vitae magna tempus pharetra. Praesent consequat, ligula a bibendum semper, erat augue malesuada augue, in efficitur magna arcu eu nisi. Cras id interdum nulla. Vivamus viverra nisl vitae tortor convallis viverra. Pellentesque eleifend felis efficitur bibendum congue. Suspendisse placerat nulla mauris, nec tempor leo pharetra ac. Proin facilisis iaculis lacus, at malesuada orci. Aenean vitae ullamcorper velit. In et leo placerat, lacinia elit at, volutpat urna. Fusce consequat arcu ut odio pretium tristique. Aenean aliquet congue velit, vel aliquet eros viverra non. Sed vehicula venenatis nibh id finibus. Suspendisse dignissim arcu mauris, eget pulvinar arcu finibus vel. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+<span className="asset-placeholder">Image placeholder: 551 - After implementing Evals, we could more effectively evaluate agent performance against specific performance goals and compare the current version of our agent against previous versions</span>
 
-Suspendisse consequat est feugiat neque euismod, eu posuere ex molestie. Aenean elementum tellus in mauris faucibus bibendum. Sed elementum, ligula ac tincidunt sollicitudin, nibh tellus sollicitudin magna, at ornare urna nunc sed mi. Nam ullamcorper magna a massa sollicitudin aliquam. Nullam dapibus nulla quis nisi mattis, vitae elementum tellus molestie. Praesent eget massa quis nibh ultrices consectetur vitae in tortor. Mauris quis efficitur erat, nec finibus metus. Quisque feugiat eleifend nibh nec porta. Sed sodales libero sit amet viverra sollicitudin. Mauris eu lorem ac felis aliquet hendrerit ut sit amet magna. Aenean massa sapien, porttitor ac porta congue, semper dapibus ligula. Nullam elementum risus sit amet molestie molestie. Duis lectus odio, semper a felis ac, placerat.
+#### Improving the Foundation of the Telemetry Investigation
 
-## Infrastructure Architecture
+One of the biggest problems our evals revealed was that the Telemetry Agent often started on a shaky foundation, making malformed tool calls at the very beginning of the investigation.
 
-This page will describe Oiva's deployment architecture and the practical infrastructure trade-offs behind it.
+Additionally, running evals with canned alerts was difficult because the agent made incorrect assumptions about the relevant timestamps. These assumptions were reasonable for most production alerts but made testing with canned alerts unreliable. Multiple rounds of prompt engineering didn’t improve performance, so we introduced more determinism at the start of the process by building a custom tool that always provides the agent with a clear picture of the alert and its related telemetry.
 
-### Choosing AWS
+After this change, malformed tool calls at the beginning of the investigation dropped from \~90% to \~10%, and the agent used a relevant time window 80% of the time, up from less than half.
 
-The final copy will explain why AWS was chosen for the capstone deployment target.
+<span className="asset-placeholder">Image placeholder: 770 - Letting the agent start the investigation without help: the agent almost always has trouble getting the results of the query that triggered the alert</span>
 
-### Terraform and Escape Hatches
+<span className="asset-placeholder">Image placeholder: 771 - Giving the agent a hand: with the help of the custom `enrich_alert` tool, the agent is able to get started with a more useful context, improving the success rate of subsequent tool calls, resulting in more useful reports</span>
 
-Infrastructure is provisioned with Terraform while preserving room for direct operational control when needed.
+## Infrastructure
 
-### ECS and Fargate
+At its core, Oiva is a self-hosted, cloud-neutral application that runs in a container and connects to a relational database. To streamline startup for new users, we include a fully provisioned deployment option on Amazon Web Services (AWS), defined with Terraform.
 
-This section will describe the container runtime decision and how services are deployed.
+<span className="asset-placeholder">Image placeholder: 610 - At a high level, Oiva’s architecture is quite simple. Scroll down to view the architecture in more detail…</span>
 
-### Networking and Data Services
+### One Application Service vs. Split Services
 
-The final version will cover public/private boundaries, RDS, S3, secrets handling, and replication.
+Oiva runs both the HTTP API and the background workflow in a single container. Splitting into separate web and worker services would improve independent scaling and fault isolation, but requires more deployment units, coordination, and possibly a queue boundary. A single-service design simplifies the architecture and matches the expected workload — likely no more than 15 alerts per week. This effectively trades increased infrastructure complexity for some code complexity, as resources must be allocated and released for each investigation.
+
+<span className="asset-placeholder">Image placeholder: 625 - ROUND 3: A long-running ECS task that handles all Oiva duties makes for simple infrastructure, but requires more code complexity, hidden in this diagram</span>
+
+<span className="asset-placeholder">Image placeholder: 626 - ROUND 3: Keeping alert ingestion and other services in a long-running ECS task, then spinning up a new ECS task for each investigation would reduce some code complexity, but would introduce new challenges, including making it more difficult to develop and test locally</span>
+
+### Key Decisions for the Provisioned AWS Deployment
+
+#### A Fully Provisioned System with Escape Hatches through Terraform
+
+Terraform encodes the architecture as a reusable module that includes the network, compute service, database, load balancer, storage bucket, logs, and access policies. This makes deployment more predictable and accessible to teams with little cloud experience. However, we also provide escape hatches for more experienced teams to supply their own AWS components as Terraform variables, such as a virtual private cloud or an ACM certificate.
+
+#### Running Containers With Fargate
+
+<span className="asset-placeholder">Image placeholder: 621 - Oiva runs on ECS with Fargate to maximize uptime and minimize maintenance overhead</span>
+
+For compute, we chose Amazon ECS with Fargate. ECS is AWS’s container orchestration service, and Fargate is its serverless container runtime: users provide a container image and resource settings, while AWS runs the container without users having to manage virtual machines.
+
+Alternatives include EC2, AWS’s virtual machine service; EKS, AWS’s managed Kubernetes service; or Lambda, AWS’s function-based serverless runtime. EC2 gives more control but requires server maintenance. Kubernetes is powerful but too operationally heavy for Oiva’s needs. Lambda reduces idle infrastructure, but would break down if Oiva’s investigations ever exceeded their 15-minute limit. Fargate is the right balance of container flexibility and low operational burden.
+
+The ECS task also runs an OpenTelemetry collector sidecar that forwards traces to the configured observability backend, while container logs go to CloudWatch, AWS’s managed log service.
+
+#### Exposing Only What Needs To Be Public
+
+Oiva needs a public URL because Slack and Honeycomb send webhook requests to it. A public Application Load Balancer, a managed AWS entrypoint, receives HTTPS traffic and forwards it to Oiva. The Fargate tasks and the RDS database run in private subnets and are unreachable from the internet. This approach entails additional networking complexity and cost but offers security by allowing private resources to call external APIs without being publicly reachable.
+
+#### Using Managed Data Services
+
+For persistence, we chose RDS and S3, AWS’s managed relational database and object storage services, respectively. Running Postgres on RDS gives Oiva durable incident and workflow state. S3 stores knowledge base files that contain architectural and operational information about the user’s application.
+
+Simpler alternatives include bundling knowledge files into the container image or self-hosting Postgres in the application environment, but these options complicate updates and degrade reliability. RDS and S3 provide encryption, private access, and managed durability with less operational work than the alternatives.
+<span className="asset-placeholder">Image placeholder: 670 - Oiva needs to function reliably even when the observed system is malfunctioning. By default, Oiva runs in one AZ, but is started in a second AZ if the first AZ is degraded: the DB replica is promoted to primary and a new ECS task is started; it is replicated across two AZs using ECS and RDS</span>
+
+#### Handling Secrets Safely
+
+Finally, Oiva’s application secrets are stored in AWS’s Secrets Manager rather than as raw Terraform variables. Our provisioned Terraform deployment creates empty secret placeholders or accepts existing references. This prevents sensitive values from being committed or stored in Terraform state.
+
+#### Overview of the full architecture
+
+Overall, the provisioned infrastructure favors a secure, reproducible, low-maintenance
+deployment over maximum scalability or the lowest possible cost.
+
+<span className="asset-placeholder">Image placeholder: 25 - v02</span>
+
+v03
+<span className="asset-placeholder">Image placeholder: 26</span>
+<span className="asset-placeholder">Image placeholder: 690 - Final deployed infrastructure</span>
 
 ## Future Work
 
-This page will summarize where Oiva could go next after the initial implementation.
-
 ### Broadening User Options
 
-Future versions may support more observability sources, deployment shapes, and team communication preferences.
+Oiva isolates external systems behind adapters to integrate more seamlessly with a variety of third-party options. On the intake side, the `source` field in the alerts table is designed to ingest webhook alerts from other observability backends (e.g., SigNoz or Datadog) or alerting services (e.g., PagerDuty). On the query side, Oiva can extend its query adapters to other wide-event stores, such as Axiom or ClickStack, and customize its system prompts to investigate incidents wherever users choose to store their observability data. On the delivery side, Oiva could send its findings to additional destinations, such as Microsoft Teams, or directly to the user’s email.
 
 ### Augmenting Agent Capabilities
 
-The final copy will identify improvements to investigation depth, tool use, report confidence, and user control.
+Oiva’s multi-agent system design makes it easier to update existing agents and add new ones, as each subagent is isolated and orchestrated by a single supervisor. For example, we could add a dedicated system-health subagent focused on infrastructure checks for users who need such additional support.
 
-### Improving Deployment Readiness
+Additionally, the codebase subagent provides many opportunities to improve Oiva’s investigative chops. We could extend it to track additional deployment patterns (the current version treats `main` as deployed), run tests and static checks, identify infrastructure and other dependencies, and add GitHub App integration for authentication and access.
 
-This section will cover the work needed to make Oiva easier to operate outside the original project environment.
+Oiva’s fault-injection evaluation framework provides a testing foundation that can be extended in parallel to include additional fault types, rerun earlier experiments to confirm that blind spots are fixed, and implement improvements in future versions of our subagents.
+
+### Improving UX & Deployment-readiness
+
+To improve user experience, we could develop a dedicated UI for users to browse alert and incident history and ask a chatbot follow-up questions about delivered reports. Such an interface, or even a simpler CLI, could also serve as a portal for self-hosters to configure specific agent skills, customize system prompts, or add to the knowledge base. On the operational side, adding CI/CD for image and Terraform builds and splitting investigations into isolated tasks that can run in parallel would harden real Oiva deployments.
+
+These three threads share a main trajectory. As we continue to develop and evaluate Oiva, its responsibilities will expand to include more autonomous actions that help engineers reliably resolve incidents.

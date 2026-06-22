@@ -317,6 +317,18 @@ samp {
   text-transform: uppercase;
 }
 
+.asset-placeholder {
+  background: #fff200;
+  border: 2px solid #ff2d00;
+  border-radius: var(--radius-xs);
+  color: #241200;
+  display: inline-block;
+  font-size: var(--text-sm);
+  font-weight: 800;
+  line-height: var(--leading-ui);
+  padding: 0.35rem 0.55rem;
+}
+
 .card {
   background: var(--color-surface);
   border: 1px solid var(--border-subtle);
