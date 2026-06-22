@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { withBase } from "../lib/urls";
 ---
 
 <BaseLayout title="Page Not Found" description="The requested Oiva page could not be found.">
@@ -8,8 +9,8 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     <h1>Page not found</h1>
     <p>The page may have moved, or the route may not exist yet in this structural build.</p>
     <div class="button-row">
-      <a class="button button-primary" href="/case-study/overview/">Case Study</a>
-      <a class="button button-secondary" href="/getting-started/overview/">Getting Started</a>
+      <a class="button button-primary" href={withBase("/case-study/")}>Case Study</a>
+      <a class="button button-secondary" href={withBase("/get-started/manual-setup/")}>Get Started</a>
     </div>
   </section>
 </BaseLayout>

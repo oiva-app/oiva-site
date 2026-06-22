@@ -131,7 +131,7 @@ The visual language should be optimized for:
 
 ## Priority 2
 
-Getting Started
+Get Started
 
 Should feel like:
 

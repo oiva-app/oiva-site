@@ -1,8 +1,9 @@
 ---
 import lightLogo from "../assets/logo/oiva_logo_green_02.svg";
 import darkLogo from "../assets/logo/oiva_logo_white_02.svg";
+import { withBase } from "../lib/urls";
 
-const { label = "Oiva", href = "/" } = Astro.props;
+const { label = "Oiva", href = withBase("/") } = Astro.props;
 ---
 
 <a class="logo" href={href} aria-label={label}>

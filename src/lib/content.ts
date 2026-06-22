@@ -1,7 +1,6 @@
-import type { CollectionEntry } from "astro:content";
-import { getCollection } from "astro:content";
+import { withBase } from "./urls";
 
-export type SectionKey = "caseStudy" | "gettingStarted";
+export type SectionKey = "caseStudy" | "getStarted";
 
 export type SectionPage = {
   href: string;
@@ -17,54 +16,89 @@ export type HeadingLink = {
   depth: number;
   slug: string;
   text: string;
+  children?: HeadingLink[];
 };
 
 const sectionBasePath: Record<SectionKey, string> = {
   caseStudy: "/case-study",
-  gettingStarted: "/getting-started",
+  getStarted: "/get-started",
 };
 
 export const sectionTitles: Record<SectionKey, string> = {
   caseStudy: "Case Study",
-  gettingStarted: "Getting Started",
+  getStarted: "Get Started",
 };
 
-export async function getSectionEntries(section: SectionKey) {
-  const entries = await getCollection(section);
+export function toSinglePageSidebarPages(
+  section: SectionKey,
+  headings: HeadingLink[],
+): SectionPage[] {
+  const pages: SectionPage[] = [];
 
-  return entries.sort((a, b) => {
-    if (a.data.order === b.data.order) {
-      return a.id.localeCompare(b.id);
+  headings.forEach((heading) => {
+    if (heading.depth === 2) {
+      pages.push({
+        href: withBase(`${sectionBasePath[section]}/#${heading.slug}`),
+        label: heading.text,
+        title: heading.text,
+        description: "",
+        id: heading.slug,
+        order: pages.length + 1,
+        headings: [],
+      });
+
+      return;
     }
 
-    return a.data.order - b.data.order;
+    if (heading.depth === 3 && pages.length > 0) {
+      pages[pages.length - 1].headings.push(heading);
+    }
   });
+
+  return pages;
 }
 
-export function mapSectionPages(
+export function toSectionSidebarPages(
   section: SectionKey,
-  entries: CollectionEntry<SectionKey>[],
+  entries: {
+    entry: {
+      id: string;
+      data: {
+        title: string;
+        description: string;
+        order: number;
+        sidebarLabel?: string;
+      };
+    };
+    headings: HeadingLink[];
+  }[],
 ): SectionPage[] {
-  return entries.map((entry) => ({
-    href: `${sectionBasePath[section]}/${entry.id}/`,
-    label: entry.data.sidebarLabel ?? entry.data.title,
-    title: entry.data.title,
-    description: entry.data.description,
-    id: entry.id,
-    order: entry.data.order,
-    headings: [],
-  }));
+  return entries
+    .map(({ entry, headings }) => ({
+      href: withBase(`${sectionBasePath[section]}/${entry.id}/`),
+      label: entry.data.sidebarLabel ?? entry.data.title,
+      title: entry.data.title,
+      description: entry.data.description,
+      id: entry.id,
+      order: entry.data.order,
+      headings: toNestedHeadingLinks(headings),
+    }))
+    .sort((a, b) => a.order - b.order);
 }
 
-export function getAdjacentPages(pages: SectionPage[], currentId: string) {
-  const index = pages.findIndex((page) => page.id === currentId);
+function toNestedHeadingLinks(headings: HeadingLink[]): HeadingLink[] {
+  const nestedHeadings: HeadingLink[] = [];
 
-  return {
-    previous: index > 0 ? pages[index - 1] : undefined,
-    next: index >= 0 && index < pages.length - 1 ? pages[index + 1] : undefined,
-  };
-}
+  headings.forEach((heading) => {
+    if (heading.depth === 2) {
+      nestedHeadings.push({ ...heading, children: [] });
+      return;
+    }
 
-export function toHeadingLinks(headings: HeadingLink[]) {
-  return headings.filter((heading) => heading.depth === 2);
+    if (heading.depth === 3 && nestedHeadings.length > 0) {
+      nestedHeadings[nestedHeadings.length - 1].children?.push(heading);
+    }
+  });
+
+  return nestedHeadings;
 }

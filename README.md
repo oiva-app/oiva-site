@@ -35,15 +35,15 @@ src/
     logo-vendors/         Vendor and integration logos
   content/
     case-study/           Case study pages
-    getting-started/      Getting started pages
+    get-started/          Get started pages
   data/
     navigation.ts         Top navigation links and GitHub URL
     team.ts               Team profile data
   pages/
     index.astro           Homepage route
     team.astro            Team page route
-    case-study/[slug].astro
-    getting-started/[slug].astro
+    case-study/index.astro
+    get-started/index.astro
   components/             Reusable page pieces
   layouts/
     BaseLayout.astro      Site metadata and shared page shell
@@ -60,29 +60,36 @@ Astro creates pages from files in `src/pages/`.
 
 - `src/pages/index.astro` becomes `/`.
 - `src/pages/team.astro` becomes `/team/`.
-- `src/pages/case-study/[slug].astro` creates one page for each file in `src/content/case-study/`.
-- `src/pages/getting-started/[slug].astro` creates one page for each file in `src/content/getting-started/`.
+- `src/pages/case-study/index.astro` renders `/case-study/`.
+- `src/pages/get-started/index.astro` redirects `/get-started/`.
+- `src/pages/get-started/[slug].astro` renders `/get-started/manual-setup/` and `/get-started/configuration/`.
 
-For content collection pages, the file name becomes the URL slug. For example:
-
-```text
-src/content/case-study/overview.mdx
-```
-
-becomes:
+The case study section uses one MDX file. The get started section uses one MDX file per page:
 
 ```text
-/case-study/overview/
+src/content/case-study/index.mdx
+src/content/get-started/manual-setup.mdx
+src/content/get-started/configuration.mdx
 ```
 
-## Editing Case Study and Getting Started Pages
+Those files become:
+
+```text
+/case-study/
+/get-started/manual-setup/
+/get-started/configuration/
+```
+
+## Editing Case Study and Get Started Pages
 
 Most article-style content lives in MDX files:
 
 - Case study pages: `src/content/case-study/*.mdx`
-- Getting started pages: `src/content/getting-started/*.mdx`
+- Get started pages: `src/content/get-started/*.mdx`
 
 MDX is Markdown with the option to import and use components. Regular Markdown headings, paragraphs, lists, links, and code blocks work as expected.
+
+The case study sidebar is generated from headings inside its single MDX file. Get started sidebars list each MDX page, with `##` headings nested below the current page. Use `##` for top sidebar sections and `###` for nested subsection links.
 
 Each MDX file starts with frontmatter. Frontmatter is the data between the `---` lines at the top of the file.
 
@@ -103,16 +110,15 @@ The frontmatter fields are validated in `src/content.config.ts`.
 | --- | --- | --- |
 | `title` | Yes | The page heading, browser title, and page metadata. |
 | `description` | Yes | The intro text below the page heading and metadata description. |
-| `order` | Yes | Sidebar order and previous/next page order. Lower numbers appear first. |
+| `order` | Yes | Content collection order. |
 | `sidebarLabel` | No | Shorter label for the sidebar. If omitted, the sidebar uses `title`. |
 
-To add a new page:
+To add a new section to a single-page content file:
 
-1. Create a new `.mdx` file in either `src/content/case-study/` or `src/content/getting-started/`.
-2. Use a lowercase, hyphenated file name, such as `incident-reports.mdx`.
-3. Add the required frontmatter.
-4. Pick an `order` value that places the page where it belongs in the sidebar.
-5. Run `npm run build` to catch missing or invalid fields.
+1. Open `src/content/case-study/index.mdx` or the relevant file in `src/content/get-started/`.
+2. Add a `##` heading for the new sidebar section.
+3. Add `###` headings for nested sidebar links.
+4. Run `npm run build` to catch missing or invalid fields.
 
 ## Adding Figures to MDX Pages
 
@@ -216,7 +222,7 @@ export const githubUrl = "https://github.com/oiva-app/oiva";
 export const navLinks = [
   {
     label: "Case Study",
-    href: "/case-study/overview/",
+    href: "/case-study/",
     match: "/case-study/",
   },
 ];
@@ -308,7 +314,8 @@ npm run dev
 Then spot-check:
 
 - Homepage: `/`
-- Case study pages: `/case-study/overview/`
-- Getting started pages: `/getting-started/overview/`
+- Case study page: `/case-study/`
+- Manual setup page: `/get-started/manual-setup/`
+- Configuration page: `/get-started/configuration/`
 - Team page: `/team/`
 - Light and dark theme logo switching

@@ -1,0 +1,285 @@
+---
+title: "Configuration"
+description: "Environment variables, Credentials, and Terraform settings to deploy Oiva"
+order: 2
+sidebarLabel: "Configuration"
+---
+
+## Overview
+
+Oiva's AWS deployment is configured in two places:
+
+- `terraform.tfvars` contains non-secret deployment settings, such as AWS region, domain name, container image, and resource sizing.
+- AWS Secrets Manager stores credentials, API keys, tokens, and signing secrets that should not be committed to source control.
+
+Do not put raw API keys or tokens in `terraform.tfvars`. The default deployment creates placeholder secrets during `terraform apply`. Populate those secrets after Terraform creates the infrastructure, then force ECS to start a fresh task so the running container receives the new values.
+
+## Starter `terraform.tfvars`
+
+Use `terraform/terraform.tfvars.example` as the source template:
+
+```bash
+cd terraform
+cp terraform.tfvars.example terraform.tfvars
+```
+
+A small beginner deployment using Route 53 DNS and a Terraform-created certificate looks like this:
+
+```hcl
+deployment_name = "oiva-dev"
+aws_region      = "us-east-1"
+
+agent_image = "123456789012.dkr.ecr.us-east-1.amazonaws.com/oiva-agent:abc1234"
+
+domain_name           = "oiva.example.com"
+hosted_zone_id        = "Z0123456789ABCDEF"
+create_route53_record = true
+
+observed_app_name = "orders-api"
+app_github_repositories = [
+  {
+    name = "orders-api"
+    url  = "https://github.com/example/orders-api.git"
+  }
+]
+
+slack_channel_id = "C0123456789"
+```
+
+`app_github_repositories` is Terraform/HCL syntax: a list of objects. It is not a JSON string.
+
+## Required Terraform Variables
+
+Set these values in `terraform/terraform.tfvars` before applying the stack.
+
+### Deployment Identity
+
+- `deployment_name`: a short, stable name used in AWS resource names and tags. Good examples are `oiva-dev`, `oiva-prod`, or `team-oiva`. Keep it lowercase, avoid spaces, and do not change it casually after deployment.
+- `aws_region`: the AWS region where Oiva will run, such as `us-east-1`. Use the same region for AWS CLI commands, ECR, ECS, the load balancer, and ACM certificates unless you intentionally build a cross-region setup.
+- `agent_image`: the published Oiva container image URI that ECS pulls when it starts the service. This comes from the build-and-push step in the manual setup guide.
+
+An ECR image URI usually looks like:
+
+```text
+123456789012.dkr.ecr.us-east-1.amazonaws.com/oiva-agent:abc1234
+```
+
+### Public Endpoint
+
+- `domain_name`: the public HTTPS hostname for Oiva, such as `oiva.example.com`.
+
+Honeycomb and Slack need to call Oiva over the public internet, so the deployed service needs a real HTTPS URL. For the default AWS deployment, public traffic reaches Oiva through an Application Load Balancer.
+
+### Observed Application
+
+- `observed_app_name`: the stable display name of the application Oiva investigates, such as `orders-api`.
+- `app_github_repositories`: the GitHub repositories Oiva can inspect during an investigation.
+
+Each repository entry has:
+
+- `name`: a short local name using only letters, numbers, periods, underscores, and hyphens.
+- `url`: the HTTPS clone URL for the repository.
+
+Example with multiple repositories:
+
+```hcl
+app_github_repositories = [
+  {
+    name = "orders-api"
+    url  = "https://github.com/example/orders-api.git"
+  },
+  {
+    name = "orders-worker"
+    url  = "https://github.com/example/orders-worker.git"
+  }
+]
+```
+
+Keep this list focused on repositories that help Oiva investigate incidents for the observed app.
+
+### Slack Channel
+
+- `slack_channel_id`: the Slack channel ID where Oiva posts investigation updates and reports.
+
+This value is a channel ID, not a display name. It usually starts with `C`, such as `C0123456789`. Do not use `#alerts`.
+
+## DNS And Certificate Options
+
+Choose one supported domain path before applying Terraform.
+
+| Setup | `hosted_zone_id` | `create_route53_record` | `certificate_arn` |
+| --- | --- | --- | --- |
+| Route 53 DNS with Terraform-created certificate | Set it | `true` | Leave unset |
+| Route 53 DNS with existing certificate | Set it | `true` | Set it |
+| External DNS with existing certificate | Leave unset | `false` | Set it |
+
+### Find A Route 53 Hosted Zone ID
+
+If your domain's DNS is managed in Route 53, list hosted zones:
+
+```bash
+aws route53 list-hosted-zones \
+  --query 'HostedZones[].{Name:Name,Id:Id}' \
+  --output table
+```
+
+AWS may show hosted zone IDs as paths like `/hostedzone/Z0123456789ABCDEF`. In `terraform.tfvars`, use the hosted zone ID portion:
+
+```hcl
+hosted_zone_id = "Z0123456789ABCDEF"
+```
+
+### Find An ACM Certificate ARN
+
+If you are using an existing certificate, list ACM certificates in the same region as `aws_region`:
+
+```bash
+aws acm list-certificates \
+  --region us-east-1 \
+  --query 'CertificateSummaryList[].{Domain:DomainName,Arn:CertificateArn}' \
+  --output table
+```
+
+Use a certificate whose domain covers `domain_name`. For example, `oiva.example.com` can use a certificate for `oiva.example.com` or a wildcard certificate for `*.example.com`.
+
+The certificate must be in the same AWS region as the load balancer. For this Terraform deployment, that means it must be in `aws_region`.
+
+If Terraform creates the certificate for you, leave `certificate_arn` unset.
+
+## Required Secrets
+
+Terraform creates placeholder Secrets Manager secrets by default. Add real values after the first `terraform apply`, then force a new ECS deployment.
+
+### Honeycomb
+
+- `HONEYCOMB_MCP_KEY`: allows Oiva to query Honeycomb through the Honeycomb MCP integration.
+- `HONEYCOMB_API_KEY`: allows Oiva telemetry export to Honeycomb.
+- `HONEYCOMB_SHARED_SECRET`: verifies incoming Honeycomb webhook requests.
+
+Generate `HONEYCOMB_SHARED_SECRET` yourself and use the same value when configuring the Honeycomb webhook recipient:
+
+```bash
+openssl rand -hex 32
+```
+
+Configure Honeycomb alerts to call the `honeycomb_alert_webhook_url` Terraform output.
+
+### GitHub
+
+- `GITHUB_PAT`: allows Oiva to read configured GitHub repositories during an investigation.
+
+Use a fine-grained personal access token with the minimum repository access needed for the repositories listed in `app_github_repositories`. For private repositories, grant read access to repository contents.
+
+### Slack
+
+- `SLACK_BOT_TOKEN`: allows Oiva to post messages and reports. Slack bot tokens usually start with `xoxb-`.
+- `SLACK_SIGNING_SECRET`: verifies incoming Slack interaction requests.
+
+Create a Slack app, add the `chat:write` bot scope, install the app to your workspace, and copy the bot token. The signing secret is in the Slack app's basic settings. Slack should send interactions to the `slack_action_webhook_url` Terraform output.
+
+### LLM Provider Secrets
+
+The default deployment uses OpenAI models, so the default LLM provider secret is `OPENAI_API_KEY`.
+
+The `llm_provider_secret_env_vars` Terraform variable is a set of environment variable names, not secret values. Terraform uses these names to create Secrets Manager placeholders and inject the populated secrets into the Oiva task.
+
+Check the [Mastra provider docs](https://mastra.ai/models/providers) for the environment variable name expected by the model provider you choose.
+
+Default:
+
+```hcl
+llm_provider_secret_env_vars = ["OPENAI_API_KEY"]
+```
+
+Example for multiple model providers:
+
+```hcl
+llm_provider_secret_env_vars = [
+  "OPENAI_API_KEY",
+  "ANTHROPIC_API_KEY",
+  "GOOGLE_API_KEY",
+]
+```
+
+Provider API key placeholders use the lower-case, hyphenated form of the environment variable name. For example, with `deployment_name = "oiva"`, a provider env var named `OPENAI_API_KEY` creates a secret named `/oiva/oiva/openai-api-key`.
+
+## Optional Overrides
+
+Most first deployments should leave these values at their defaults. Change them when you have a specific scaling, cost, retention, or integration reason.
+
+### Managed Resource Overrides
+
+These variables change the AWS resources Terraform manages for you.
+
+| Variable | Default | Guidance |
+| --- | --- | --- |
+| `task_cpu` | `1024` | Increase for heavier investigations or higher runtime CPU needs. |
+| `task_memory` | `2048` | Increase if ECS tasks run out of memory. |
+| `ephemeral_storage_gib` | `50` | Increase for larger cloned repositories or knowledge-base workspaces. |
+| `cloudwatch_log_retention_days` | `30` | Increase for longer debugging/audit retention, decrease to reduce log storage. |
+| `postgres_instance_class` | `"db.t4g.micro"` | Increase for production load or higher database concurrency. |
+| `postgres_allocated_storage` | `20` | Increase if you expect more incident and workflow history. |
+| `postgres_backup_retention` | `7` | Increase for stronger recovery requirements. |
+| `postgres_multi_az` | `true` | Keep `true` for production; set `false` only for cheaper non-production environments. |
+| `knowledge_base_s3_prefix` | `""` | Set when knowledge-base files should live under a prefix inside the bucket. |
+| `knowledge_base_force_destroy` | `true` | Keep `true` for easy teardown; set `false` if Terraform should refuse to delete a non-empty managed bucket. |
+
+### Runtime Behavior Overrides
+
+These variables change Oiva runtime behavior inside the managed AWS service.
+
+| Variable | Default | Guidance |
+| --- | --- | --- |
+| `supervisor_max_steps` | `30` | Increase only if investigations end before the supervisor completes useful work. |
+| `subagent_max_steps` | `20` | Increase if delegated agent work regularly stops too early. |
+| `telemetry_max_steps` | `20` | Increase if telemetry investigations need more tool/model turns. |
+| `codebase_max_steps` | `20` | Increase if codebase investigations need more repository inspection. |
+| `supervisor_agent_model` | `"openai/gpt-5.4"` | Change when intentionally using another supported Mastra model router ID. |
+| `telemetry_agent_model` | `"openai/gpt-5.4"` | Change when intentionally using another supported Mastra model router ID. |
+| `codebase_agent_model` | `"openai/gpt-5.4"` | Change when intentionally using another supported Mastra model router ID. |
+| `report_agent_model` | `"openai/gpt-4o-mini"` | Change if report generation needs a different cost/quality profile. |
+| `correlation_window_minutes` | `30` | Increase if related alerts often arrive farther apart; decrease if unrelated alerts are being grouped together. |
+| `reaper_enabled` | `true` | Leave enabled so old delivered, failed, or stuck incident state is cleaned up. |
+| `reaper_interval_minutes` | `10` | Controls how often cleanup runs. |
+| `reaper_delivered_quiet_minutes` | `1440` | Minutes before delivered incidents are eligible for cleanup. |
+| `reaper_failed_quiet_minutes` | `1440` | Minutes before failed incidents are eligible for cleanup. |
+| `reaper_stuck_deadline_minutes` | `60` | Minutes before a stuck investigation is eligible for cleanup. |
+
+If you add non-OpenAI model providers, also update `llm_provider_secret_env_vars` so Terraform creates and injects the required provider API key secrets.
+
+### Escape Hatches For Existing Components
+
+Escape hatches are for deployments that bring existing AWS resources instead of letting Terraform create everything. Beginners should leave these unset unless they already have the exact IDs, names, or ARNs.
+
+For an existing VPC, set:
+
+```hcl
+create_vpc = false
+vpc_id     = "vpc-0123456789abcdef0"
+
+public_subnet_ids  = ["subnet-0123456789abcdef0", "subnet-11111111111111111"]
+private_subnet_ids = ["subnet-22222222222222222", "subnet-33333333333333333"]
+```
+
+Public subnets are used by the Application Load Balancer. Private subnets are used by ECS tasks and RDS.
+
+For an existing knowledge-base bucket, set:
+
+```hcl
+create_knowledge_base_bucket = false
+knowledge_base_s3_bucket     = "existing-oiva-knowledge-base"
+knowledge_base_s3_prefix     = "optional-prefix/"
+```
+
+For existing Secrets Manager secrets, set the matching ARN variables:
+
+```hcl
+honeycomb_mcp_key_secret_arn        = "arn:aws:secretsmanager:us-east-1:123456789012:secret:..."
+honeycomb_shared_secret_secret_arn  = "arn:aws:secretsmanager:us-east-1:123456789012:secret:..."
+github_pat_secret_arn               = "arn:aws:secretsmanager:us-east-1:123456789012:secret:..."
+slack_bot_token_secret_arn          = "arn:aws:secretsmanager:us-east-1:123456789012:secret:..."
+slack_signing_secret_secret_arn     = "arn:aws:secretsmanager:us-east-1:123456789012:secret:..."
+honeycomb_api_key_secret_arn        = "arn:aws:secretsmanager:us-east-1:123456789012:secret:..."
+```
+
+When you provide an existing secret ARN, Terraform injects that secret into the Oiva task instead of creating a placeholder secret for that value.

@@ -1,6 +1,7 @@
 ---
 import Logo from "./Logo.astro";
 import { githubUrl } from "../data/navigation";
+import { withBase } from "../lib/urls";
 ---
 
 <footer class="site-footer">
@@ -9,7 +10,7 @@ import { githubUrl } from "../data/navigation";
     <p>Open-source, self-hosted AI-assisted incident investigation.</p>
     <nav aria-label="Footer navigation">
       <a href={githubUrl} target="_blank" rel="noopener noreferrer">GitHub</a>
-      <a href="/team/">Team</a>
+      <a href={withBase("/team/")}>Team</a>
     </nav>
   </div>
 </footer>

@@ -14,12 +14,12 @@ const caseStudy = defineCollection({
   schema: pageSchema,
 });
 
-const gettingStarted = defineCollection({
+const getStarted = defineCollection({
   loader: glob({
-    base: "./src/content/getting-started",
+    base: "./src/content/get-started",
     pattern: "**/*.{md,mdx}",
   }),
   schema: pageSchema,
 });
 
-export const collections = { caseStudy, gettingStarted };
+export const collections = { caseStudy, getStarted };

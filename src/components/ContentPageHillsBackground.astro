@@ -1,8 +1,86 @@
+---
+const BACKGROUND_HEIGHT = 78000;
+const GLOBAL_CLOSE_Y = BACKGROUND_HEIGHT + 360;
+const LEFT_EDGE = -260;
+const RIGHT_EDGE = 1860;
+const HILL_BASE_LEFT = -80;
+
+const hillClasses = [
+  "hill-mist-blue",
+  "hill-paper-shadow",
+  "hill-pale-green",
+  "hill-sage",
+  "hill-yellow",
+  "hill-rust-mid",
+  "hill-blue-low",
+  "hill-slate-low",
+  "hill-green-low",
+  "hill-gold-low",
+  "hill-deep-blue",
+];
+
+const hillCurves = [
+  { startY: 650, curve: "C110 720 310 780 520 720 C730 660 850 548 1058 520 C1258 494 1460 560 1680 650", endY: 650 },
+  { startY: 748, curve: "C70 650 208 676 360 760 C544 862 714 966 936 924 C1116 890 1250 756 1468 740 C1566 734 1632 788 1680 842", endY: 842 },
+  { startY: 1184, curve: "C92 1238 260 1222 444 1138 C620 1058 746 812 986 850 C1184 882 1320 1078 1500 1068 C1582 1064 1638 1018 1680 970", endY: 970 },
+  { startY: 1518, curve: "C34 1358 156 1340 292 1448 C418 1548 516 1590 660 1460 C792 1340 906 1278 1054 1398 C1192 1510 1304 1510 1436 1370 C1526 1274 1610 1316 1680 1408", endY: 1408 },
+  { startY: 1804, curve: "C78 1690 202 1772 352 1684 C504 1594 650 1618 798 1760 C948 1904 1052 1876 1188 1698 C1324 1518 1500 1486 1680 1636", endY: 1636 },
+  { startY: 2126, curve: "C42 1988 144 1998 272 2090 C404 2184 522 2142 642 1968 C768 1784 906 1840 1044 2052 C1174 2252 1292 2170 1426 1960 C1522 1810 1618 1908 1680 2032", endY: 2032 },
+  { startY: 2464, curve: "C94 2288 240 2222 416 2388 C564 2526 696 2604 842 2412 C986 2226 1106 2208 1244 2388 C1382 2568 1518 2502 1680 2352", endY: 2352 },
+  { startY: 2778, curve: "C32 2630 150 2632 286 2738 C426 2848 540 2814 676 2638 C814 2458 956 2498 1088 2730 C1212 2948 1328 2900 1468 2658 C1546 2524 1626 2606 1680 2732", endY: 2732 },
+  { startY: 3100, curve: "C86 2920 240 3008 392 2892 C552 2770 694 2858 842 3090 C976 3300 1100 3262 1248 3032 C1398 2798 1540 2840 1680 3098", endY: 3098 },
+  { startY: 3484, curve: "C64 3346 202 3324 356 3460 C502 3588 626 3580 772 3398 C920 3214 1068 3224 1216 3446 C1350 3648 1500 3602 1680 3462", endY: 3462 },
+  { startY: 3858, curve: "C48 3718 178 3772 330 3678 C486 3582 644 3650 800 3836 C944 4008 1070 3986 1218 3780 C1368 3572 1514 3638 1680 3848", endY: 3848 },
+];
+
+const hillRepeats = [
+  { x: 0, y: 0, colorOffset: 0 },
+  { x: 72, y: 3300, colorOffset: 2 },
+  { x: -64, y: 6500, colorOffset: 5 },
+  { x: 104, y: 9750, colorOffset: 8 },
+  { x: -96, y: 13000, colorOffset: 3 },
+  { x: 48, y: 16200, colorOffset: 6 },
+  { x: -120, y: 19450, colorOffset: 9 },
+  { x: 88, y: 22700, colorOffset: 1 },
+  { x: -48, y: 25950, colorOffset: 4 },
+  { x: 120, y: 29200, colorOffset: 7 },
+  { x: -88, y: 32450, colorOffset: 10 },
+  { x: 56, y: 35700, colorOffset: 2 },
+  { x: -128, y: 38950, colorOffset: 5 },
+  { x: 96, y: 42200, colorOffset: 8 },
+  { x: -72, y: 45450, colorOffset: 0 },
+  { x: 112, y: 48700, colorOffset: 3 },
+  { x: -104, y: 51950, colorOffset: 6 },
+  { x: 64, y: 55200, colorOffset: 9 },
+  { x: -40, y: 58450, colorOffset: 1 },
+  { x: 88, y: 61000, colorOffset: 4 },
+  { x: -96, y: 64250, colorOffset: 7 },
+  { x: 120, y: 67500, colorOffset: 10 },
+  { x: -56, y: 70750, colorOffset: 2 },
+  { x: 72, y: 74000, colorOffset: 5 },
+];
+
+const buildHillPath = (hill: (typeof hillCurves)[number], repeatY: number) => {
+  const closeY = GLOBAL_CLOSE_Y - repeatY;
+
+  return [
+    `M${LEFT_EDGE} ${hill.startY}`,
+    `L${HILL_BASE_LEFT} ${hill.startY}`,
+    hill.curve,
+    `L${RIGHT_EDGE} ${hill.endY}`,
+    `L${RIGHT_EDGE} ${closeY}`,
+    `L${LEFT_EDGE} ${closeY}`,
+    "Z",
+  ].join(" ");
+};
+---
+
 <div class="content-page-hills-background" aria-hidden="true">
+  <span class="atlas-paper-repeat"></span>
   <svg
     class="atlas-sheet"
     xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 1600 4200"
+    viewBox={`0 0 1600 ${BACKGROUND_HEIGHT}`}
     preserveAspectRatio="none"
     focusable="false"
   >
@@ -26,54 +104,22 @@
       </linearGradient>
     </defs>
 
-    <rect width="1600" height="4200" class="paper-base" />
-    <rect width="1600" height="4200" fill="url(#paper-warmth)" />
+    <rect width="1600" height={BACKGROUND_HEIGHT} class="paper-base" />
+    <rect width="1600" height={BACKGROUND_HEIGHT} fill="url(#paper-warmth)" />
 
     <g filter="url(#watercolor-edge)">
-      <path
-        class="hill hill-mist-blue"
-        d="M-80 650 C110 720 310 780 520 720 C730 660 850 548 1058 520 C1258 494 1460 560 1680 650 L1680 4200 L-80 4200 Z"
-      />
-      <path
-        class="hill hill-paper-shadow"
-        d="M-80 748 C70 650 208 676 360 760 C544 862 714 966 936 924 C1116 890 1250 756 1468 740 C1566 734 1632 788 1680 842 L1680 4200 L-80 4200 Z"
-      />
-      <path
-        class="hill hill-pale-green"
-        d="M-80 1184 C92 1238 260 1222 444 1138 C620 1058 746 812 986 850 C1184 882 1320 1078 1500 1068 C1582 1064 1638 1018 1680 970 L1680 4200 L-80 4200 Z"
-      />
-      <path
-        class="hill hill-sage"
-        d="M-80 1518 C34 1358 156 1340 292 1448 C418 1548 516 1590 660 1460 C792 1340 906 1278 1054 1398 C1192 1510 1304 1510 1436 1370 C1526 1274 1610 1316 1680 1408 L1680 4200 L-80 4200 Z"
-      />
-      <path
-        class="hill hill-yellow"
-        d="M-80 1804 C78 1690 202 1772 352 1684 C504 1594 650 1618 798 1760 C948 1904 1052 1876 1188 1698 C1324 1518 1500 1486 1680 1636 L1680 4200 L-80 4200 Z"
-      />
-      <path
-        class="hill hill-rust-mid"
-        d="M-80 2126 C42 1988 144 1998 272 2090 C404 2184 522 2142 642 1968 C768 1784 906 1840 1044 2052 C1174 2252 1292 2170 1426 1960 C1522 1810 1618 1908 1680 2032 L1680 4200 L-80 4200 Z"
-      />
-      <path
-        class="hill hill-blue-low"
-        d="M-80 2464 C94 2288 240 2222 416 2388 C564 2526 696 2604 842 2412 C986 2226 1106 2208 1244 2388 C1382 2568 1518 2502 1680 2352 L1680 4200 L-80 4200 Z"
-      />
-      <path
-        class="hill hill-slate-low"
-        d="M-80 2778 C32 2630 150 2632 286 2738 C426 2848 540 2814 676 2638 C814 2458 956 2498 1088 2730 C1212 2948 1328 2900 1468 2658 C1546 2524 1626 2606 1680 2732 L1680 4200 L-80 4200 Z"
-      />
-      <path
-        class="hill hill-green-low"
-        d="M-80 3100 C86 2920 240 3008 392 2892 C552 2770 694 2858 842 3090 C976 3300 1100 3262 1248 3032 C1398 2798 1540 2840 1680 3098 L1680 4200 L-80 4200 Z"
-      />
-      <path
-        class="hill hill-gold-low"
-        d="M-80 3484 C64 3346 202 3324 356 3460 C502 3588 626 3580 772 3398 C920 3214 1068 3224 1216 3446 C1350 3648 1500 3602 1680 3462 L1680 4200 L-80 4200 Z"
-      />
-      <path
-        class="hill hill-deep-blue"
-        d="M-80 3858 C48 3718 178 3772 330 3678 C486 3582 644 3650 800 3836 C944 4008 1070 3986 1218 3780 C1368 3572 1514 3638 1680 3848 L1680 4200 L-80 4200 Z"
-      />
+      {
+        hillRepeats.map((repeat) => (
+          <g transform={`translate(${repeat.x} ${repeat.y})`}>
+            {hillCurves.map((hill, index) => (
+              <path
+                class={`hill ${hillClasses[(index + repeat.colorOffset) % hillClasses.length]}`}
+                d={buildHillPath(hill, repeat.y)}
+              />
+            ))}
+          </g>
+        ))
+      }
     </g>
   </svg>
   <span class="atlas-fiber"></span>
@@ -81,18 +127,32 @@
 
 <style>
   .content-page-hills-background {
-    height: 4200px;
-    inset: 0 0 auto;
+    --content-background-art-height: 78000px;
+    inset: 0;
+    min-height: var(--content-background-art-height);
     overflow: hidden;
     pointer-events: none;
     position: absolute;
     z-index: 0;
   }
 
+  .atlas-paper-repeat {
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--color-bg-soft) 72%, var(--color-surface)), color-mix(in srgb, var(--color-accent-yellow) 13%, var(--color-bg-soft))),
+      radial-gradient(circle at 18% 24%, color-mix(in srgb, var(--color-text-subtle) 11%, transparent) 0 0.55px, transparent 0.75px),
+      radial-gradient(circle at 76% 58%, color-mix(in srgb, var(--color-bg-wash) 64%, transparent) 0 0.7px, transparent 1px);
+    background-size: auto, 19px 23px, 29px 31px;
+    inset: 0;
+    position: absolute;
+    z-index: 0;
+  }
+
   .atlas-sheet {
     display: block;
-    height: 100%;
+    height: var(--content-background-art-height);
+    position: relative;
     width: 100%;
+    z-index: 1;
   }
 
   .paper-base {
@@ -179,6 +239,7 @@
     inset: 0;
     opacity: 0.09;
     position: absolute;
+    z-index: 2;
   }
 
   :global([data-theme="dark"]) .content-page-hills-background {

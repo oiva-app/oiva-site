@@ -1,0 +1,511 @@
+---
+title: "Manual Setup"
+description: "A manual guide for deploying Oiva on AWS"
+order: 1
+sidebarLabel: "Manual Setup"
+---
+
+import Steps from "../../components/Steps.astro";
+
+## Overview
+
+Oiva can be deployed to any VPC and is not bound to a particular cloud vendor. However, to streamline startup for new users, we include a Terraform example that creates a fully provisioned deployment on Amazon Web Services (AWS).
+
+For instructions on setting up the local development server, see this [Project README](https://github.com/oiva-app/oiva/blob/main/README.md).
+
+### What This Guide Deploys
+
+The default deployment creates all of the AWS resources Oiva needs to run:
+
+- __dedicated VPC__ for Oiva
+- __two public subnets__ for the public load balancer
+- __two private subnets__ for ECS tasks and RDS
+- __internet gateway__ for public traffic into the load balancer
+- __NAT gateway__ so private ECS tasks can reach external APIs
+- __security groups__ that control traffic between the load balancer, ECS tasks, and database
+- __ACM TLS certificate__ for HTTPS
+- __Route 53 DNS record__ for the Oiva service hostname
+- __public HTTPS Application Load Balancer__
+- __ECS cluster__ and one always-running Fargate service
+- __one Fargate task definition__ with the Oiva app container and ADOT Collector sidecar
+- __private RDS Postgres__ for durable incident and workflow state
+- __Secrets Manager placeholders__ for API keys, tokens, and signing secrets
+- __private, encrypted, versioned S3 bucket__ for knowledge-base files
+- __CloudWatch log groups__ for container logs
+- __IAM roles and policies__ for ECS task startup, runtime AWS access, logs, secrets, and S3
+
+__Escape hatches__: If you already have AWS infrastructure you want to reuse, the Terraform module contains escape hatches for some existing components, such as the VPC, S3 knowledge-base bucket, and so on. More details below.
+
+Terraform creates the AWS infrastructure, but it does not put your secret values directly in Terraform files. By default, it creates empty Secrets Manager placeholders. You populate those secrets after the first `terraform apply`, then force ECS to start a fresh task with the populated values.
+
+## Prerequisites
+
+Before starting, ensure you have the following installed and configured:
+
+### Required Software
+
+- **Terraform** (>= 1.5.0) - [Installation Guide](https://developer.hashicorp.com/terraform/install)
+- **AWS CLI v2** (>= 2.0.0) - [Installation Guide](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+- **Docker** (>= 20.10.0) - [Installation Guide](https://docs.docker.com/get-docker/)
+- **Git** (>= 2.0.0) - [Installation Guide](https://git-scm.com/downloads)
+
+Note:
+- Python (>=3.8) is only needed if you use the optional `populate_secrets.py` helper script. 
+- Node.js (>=24) and npm are only needed to set up and run the local development server.
+
+### Credentials
+- LLM provider key(s)
+- Honeycomb MCP key
+- Honeycomb shared secret
+- Honeycomb API key
+- GITHUB PAT
+- Slack Bot Token
+- Slack Channel ID
+- Slack Signing Secret
+
+For more details on these credentials and other environment variables, see the [Configuration page](/get-started/configuration/).
+
+### AWS Account
+
+- Ensure you have an AWS account with appropriate permissions.
+    - The simplest path for a first deployment is to use an IAM user or role with `AdministratorAccess` in a dedicated AWS account.
+    - If you prefer a more restricted IAM role: `AmazonVPCFullAccess`, `ElasticLoadBalancingFullAccess`, `AWSCertificateManagerFullAccess`, `AmazonRoute53FullAccess`, `AmazonECS_FullAccess`, `IAMFullAccess`, `CloudWatchLogsFullAccess`, `AmazonRDSFullAccess`, `SecretsManagerReadWrite`, `AmazonS3FullAccess`, `AmazonEC2ContainerRegistryPowerUser`
+- Configure the AWS CLI with your credentials: `aws configure`
+
+That command prompts for:
+
+```text
+AWS Access Key ID
+AWS Secret Access Key
+Default region name
+Default output format
+```
+
+Use the same AWS region you plan to put in `terraform.tfvars` as `aws_region`. For output format, `json` is a good default.
+
+Check that your credentials work:
+
+```bash
+aws sts get-caller-identity
+```
+
+When deploying, if Terraform fails with an `AccessDenied` error, the AWS identity from `aws sts get-caller-identity` is missing permission for the service or action shown in the error.
+
+## Installation and Deployment
+
+<Steps>
+
+### Clone the Repository
+
+```bash
+git clone https://github.com/oiva-app/oiva.git
+cd oiva
+```
+
+For SSH cloning, use `git@github.com:oiva-app/oiva.git`
+
+### Build and Push the App Image
+
+ECS needs a container image URI it can pull when it starts Oiva.
+
+This guide uses Amazon ECR for the container registry, but you can use any registry that ECS can pull from.
+
+__From the repository root__, choose the AWS region and ECR repository name:
+```bash
+export AWS_REGION=us-east-1         # use the region specific to your deployment
+export ECR_REPOSITORY=oiva-agent    # name the ECR repository
+export AWS_ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"
+```
+
+Create the ECR repository if it does not already exist:
+```bash
+aws ecr describe-repositories \
+  --region "$AWS_REGION" \
+  --repository-names "$ECR_REPOSITORY" \
+  >/dev/null 2>&1 \
+  || aws ecr create-repository \
+    --region "$AWS_REGION" \
+    --repository-name "$ECR_REPOSITORY"
+```
+
+Log Docker in to ECR:
+```bash
+aws ecr get-login-password --region "$AWS_REGION" \
+  | docker login \
+    --username AWS \
+    --password-stdin "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
+```
+
+Build and push the Oiva image to ECR:
+```bash
+IMAGE_TAG="$(git rev-parse --short HEAD)"
+IMAGE_URI="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG"
+
+docker build -t "$IMAGE_URI" src/agent
+docker push "$IMAGE_URI"
+```
+The image tag uses the current git commit SHA so you can see exactly which source version is deployed and can roll back to an older image if needed.
+
+Save the image URI:
+```bash
+echo "$IMAGE_URI"
+```
+In the next step, you will use this URI as `agent_image` in `terraform.tfvars`.
+
+### Configure Terraform Variables
+
+Create a Terraform variable file from the example. Keep real `.tfvars` files private because they describe your deployment.
+
+```bash
+cd terraform
+cp terraform.tfvars.example terraform.tfvars
+```
+
+Set the required values in `terraform.tfvars`, including `deployment_name`, `aws_region`, `agent_image`, `domain_name`, `observed_app_name`, `app_github_repositories`, and `slack_channel_id`.
+
+In the bottom part of this file, there are a number of escape hatches for using your own existing infrastructure components. There are also configuration variables if you wish to override Oiva's defaults. For example, the Codebase Agent uses OpenAI's GPT-5.4 by default, but you can change this via the `codebase_agent_model` variable.
+
+__Choose one supported domain path before applying Terraform:__
+
+- Route 53 DNS with a Terraform-created ACM certificate
+- Route 53 DNS with an existing ACM certificate
+- external DNS with an existing ACM certificate
+
+For the beginner Route 53 path, set `domain_name`, `hosted_zone_id`, and `create_route53_record = true`, and leave `certificate_arn` unset.
+
+See the [Terraform Deployment README](https://github.com/oiva-app/oiva/blob/main/terraform/README.md#choose-your-domain-and-dns-setup) for more details on DNS settings.
+
+### Create the Infrastructure
+
+Run Terraform from the `terraform` directory.
+
+First, prepare this Terraform directory:
+```bash
+terraform init
+```
+
+Format and validate the Terraform files:
+
+```bash
+terraform fmt
+terraform validate
+```
+
+Optionally, review the plan before creating anything:
+```bash
+terraform plan
+```
+
+Apply the Terraform:
+```bash
+terraform apply
+```
+
+This process could take up to 10 minutes or so. Let Terraform finish provisioning resources before continuing to the next step.
+
+### Populate Secrets
+
+Terraform creates placeholder Secrets Manager secrets unless you provide existing secret ARNs. The deployment will not work until you populate those secrets and force a new deployment.
+
+Add values for the runtime secrets after `terraform apply`.
+The required secrets include `HONEYCOMB_MCP_KEY`, `HONEYCOMB_SHARED_SECRET`, `GITHUB_PAT`, `SLACK_BOT_TOKEN`, `SLACK_SIGNING_SECRET`, and `HONEYCOMB_API_KEY`.
+
+LLM provider API key secrets are configured separately with `llm_provider_secret_env_vars`. The default deployment uses OpenAI models. If you configure non-OpenAI provider(s), include each provider's expected environment variable name.
+
+View the secret ARNs Terraform created:
+```bash
+terraform output secret_arns
+```
+The simplest way to populate them is to run the helper script from this Terraform working directory. The script prompts for each required secret, writes non-empty values to Secrets Manager, and forces a new ECS deployment after successful updates. Leave a value blank to skip it.
+```bash
+./utilities/populate_secrets.py
+```
+
+If you do not use the optional Python helper, populate each secret manually with `aws secretsmanager put-secret-value`:
+```bash
+aws secretsmanager put-secret-value \
+  --secret-id /oiva/<deployment-name>/<provider-api-key> \
+  --secret-string "<actual-value>"
+```
+Note that Provider API key placeholders use the lower-case, hyphenated form of the env var name. For example, with deployment_name = "oiva", a provider env var named PROVIDER_API_KEY would create `/oiva/oiva/provider-api-key`.
+
+For example, if you are populating the `GITHUB_PAT` secret for a deployment named `oiva`, you would use:
+```bash
+aws secretsmanager put-secret-value \
+  --secret-id /oiva/oiva/github-pat \
+  --secret-string "123456789ABCD"
+```
+
+Force a new deployment:
+```bash
+aws ecs update-service \
+  --cluster "$(terraform output -raw ecs_cluster_name)" \
+  --service "$(terraform output -raw ecs_service_name)" \
+  --force-new-deployment
+```
+
+ECS injects Secrets Manager values into container environment variables only when a task starts. If a secret value changes later, such as when the RDS-managed Postgres password gets rotated, already-running tasks keep the old value until ECS replaces them.
+
+### Upload Knowledge Base Files
+
+Oiva can use knowledge-base files from S3 during investigations. Upload concise Markdown or text files that describe the app Oiva observes.
+
+At minimum, create an ARCHITECTURE.md file. This file should explain the relationships between the services in the app Oiva observes: what each service does, which services call each other, and which external systems they depend on.
+
+This command will upload files in the local directory `knowledge-base/`:
+```bash
+aws s3 sync ./knowledge-base "s3://$(terraform output -raw knowledge_base_bucket)/"
+```
+
+If you configured `knowledge_base_s3_prefix`, upload files under that prefix.
+```bash
+aws s3 sync ./knowledge-base "s3://$(terraform output -raw knowledge_base_bucket)/your-prefix/"
+```
+
+### Connect External Services
+
+After `terraform apply`, use Terraform outputs for the public webhook URLs:
+
+```bash
+terraform output -raw honeycomb_alert_webhook_url
+terraform output -raw slack_action_webhook_url
+```
+
+#### Honeycomb
+
+Create or update a Honeycomb webhook recipient:
+
+- URL: output from `terraform output -raw honeycomb_alert_webhook_url`
+- method: `POST`
+- payload: use Oiva's [Honeycomb alert webhook payload template](https://github.com/oiva-app/oiva/blob/main/README.md#alert-webhook-payload-format)
+- secret: use the same value you stored as `HONEYCOMB_SHARED_SECRET`
+
+In production, Oiva rejects Honeycomb webhook requests whose secret does not match `HONEYCOMB_SHARED_SECRET`. The secret may be supplied either as the `X-Honeycomb-Webhook-Token` header or as the `secret` field in the payload body. The payload template uses the body field. If both are present, the header takes precedence.
+
+#### Slack
+
+Oiva posts incident reports and live updates to a Slack channel. Create a Slack app for your workspace and:
+
+- Add the **`chat:write`** bot scope, install the app, and copy the **Bot User OAuth token** (`SLACK_BOT_TOKEN`).
+- Copy the app's **Signing secret** (`SLACK_SIGNING_SECRET`) — used to verify Slack interactions, like user ratings and incident retries.
+- Enable **Interactivity** and set the request URL to the output from `terraform output -raw slack_action_webhook_url`.
+- Invite the bot to the target channel and use its **channel ID** as `slack_channel_id` in `terraform.tfvars`.
+
+</Steps>
+
+## Verify the Deployment
+
+Use Terraform outputs and AWS CLI checks to verify that the service is running and reachable.
+
+Check the ECS service:
+
+```bash
+aws ecs describe-services \
+  --cluster "$(terraform output -raw ecs_cluster_name)" \
+  --services "$(terraform output -raw ecs_service_name)" \
+  --query 'services[0].{status:status,desiredCount:desiredCount,runningCount:runningCount,pendingCount:pendingCount,deployments:deployments[].{status:status,rolloutState:rolloutState,desiredCount:desiredCount,runningCount:runningCount,pendingCount:pendingCount}}' \
+  --output table
+```
+The service should be `ACTIVE`. For the default deployment, `desiredCount` is 1 and `runningCount` should become 1 after the task starts successfully.
+
+During a redeployment, it is normal for ECS to briefly show more than one task. A new task may be starting while the old task is still winding down. Wait a few minutes and check again before treating this as a problem.
+
+### Running Task Check
+
+List the running ECS tasks:
+
+```bash
+aws ecs list-tasks \
+  --cluster "$(terraform output -raw ecs_cluster_name)" \
+  --service-name "$(terraform output -raw ecs_service_name)" \
+  --desired-status RUNNING \
+  --output table
+```
+
+Check the public health endpoint:
+```bash
+curl -fsS -o /dev/null -w "%{http_code}\n" "$(terraform output -raw oiva_url)/health"
+```
+
+The health check should return `200`. If the task does not start, tail the CloudWatch logs and check for missing secret values or database startup errors.
+
+```bash
+aws logs tail "$(terraform output -raw cloudwatch_log_group_name)" --follow
+```
+
+### Logs Check
+
+In the logs, check that:
+- database migrations ran successfully during app startup
+- the oiva-agent container started without missing environment variable errors
+- the adot-collector container started and is receiving telemetry
+- there are no Postgres authentication errors such as password authentication failed for user "oiva" after the current task starts
+
+### Functionality Check
+Then verify the external integrations:
+- Honeycomb sends alerts to `$(terraform output -raw honeycomb_alert_webhook_url)`.
+- Slack sends interactions to `$(terraform output -raw slack_action_webhook_url)`.
+- Oiva can read the configured GitHub repositories and knowledge-base S3 files.
+- Oiva posts the expected Slack investigation message or report.
+- Oiva traces arrive in Honeycomb through the ADOT sidecar.
+
+## Destroy the Stack
+
+Use `terraform destroy` when you want to tear down a self-hosted Oiva environment.
+
+Destroying the stack will delete everything provisioned by `terraform apply`, but not components you provided via the escape hatches.
+
+Before destroying, back up anything you need to keep.
+
+To copy knowledge-base files out of the managed S3 bucket:
+
+```bash
+aws s3 sync "s3://$(terraform output -raw knowledge_base_bucket)/" ./oiva-knowledge-base-backup
+```
+
+For production data, decide how you want to preserve the RDS Postgres database before destroying the stack. The defaults are optimized for easy cleanup, not long-term data retention.
+
+If you registered your domain outside AWS and delegated DNS to Route 53, Terraform does not undo that registrar-level delegation. After destroying the stack, update your domain registrar if you want the domain to use different authoritative name servers.
+
+Run:
+
+```bash
+terraform destroy
+```
+
+Terraform asks for confirmation before deleting resources. Type `yes` only if you are ready to delete the managed infrastructure.
+
+If you used escape hatches for existing resources, Terraform should not destroy those external resources. For example, if `create_knowledge_base_bucket = false`, Terraform does not own that existing S3 bucket and should not delete it.
+
+## Troubleshooting
+### Terraform fails with `AccessDenied`
+
+The AWS identity running Terraform is missing a required permission.
+
+Check which identity Terraform is using:
+
+```bash
+aws sts get-caller-identity
+```
+
+Then compare the denied service/action in the error with the permissions listed in `Required AWS Permissions`.
+
+### ECS task fails before secrets are populated
+
+This is expected on the first apply if Terraform created empty Secrets Manager placeholders. Populate all required secrets, then force a new ECS deployment.
+
+### ECS service is not steady
+
+Check service state:
+
+```bash
+aws ecs describe-services \
+  --cluster "$(terraform output -raw ecs_cluster_name)" \
+  --services "$(terraform output -raw ecs_service_name)" \
+  --output table
+```
+
+Then check logs:
+
+```bash
+aws logs tail "$(terraform output -raw cloudwatch_log_group_name)" --follow
+```
+
+### Image pull fails
+
+Likely causes:
+
+- `agent_image` is wrong
+- the image was not pushed
+- the image is in a different AWS account or region
+- ECS does not have permission to pull the image
+
+Confirm the image exists in ECR:
+
+```bash
+aws ecr describe-images \
+  --repository-name oiva-agent \
+  --image-ids imageTag="$(git rev-parse --short HEAD)"
+```
+
+### ACM certificate is stuck validating
+
+For Route 53-managed DNS, confirm `hosted_zone_id` is correct and the domain is delegated to the Route 53 name servers.
+
+List hosted zones:
+
+```bash
+aws route53 list-hosted-zones \
+  --query 'HostedZones[].{Name:Name,Id:Id}' \
+  --output table
+```
+
+View hosted zone name servers:
+
+```bash
+aws route53 get-hosted-zone \
+  --id Z123... \
+  --query 'DelegationSet.NameServers' \
+  --output text
+```
+
+### DNS does not resolve
+
+DNS changes can take time to propagate. Confirm the Terraform output URL:
+
+```bash
+terraform output -raw oiva_url
+```
+
+If using external DNS, confirm your DNS provider points the Oiva hostname to:
+
+```bash
+terraform output -raw alb_dns_name
+```
+
+### `/health` does not return `200`
+
+Check the app logs:
+
+```bash
+aws logs tail "$(terraform output -raw cloudwatch_log_group_name)" --follow
+```
+
+Common causes are missing secrets, invalid environment configuration, image startup failure, or database migration failure.
+
+### Database migrations fail
+
+Check the `oiva-agent` startup logs in CloudWatch. Common causes are RDS connectivity problems, missing database credentials, or an app image that does not include the expected migration files.
+
+### Postgres password authentication fails
+
+If CloudWatch logs show:
+
+```text
+password authentication failed for user "oiva"
+```
+
+the running ECS task may have an old `POSTGRES_PASSWORD`. This can happen because Terraform configures RDS with `manage_master_user_password = true`; AWS RDS manages that master password in Secrets Manager and rotates it by default, while ECS task environment variables do not refresh in place.
+
+Force ECS to start a new task so it reads the current RDS-managed secret value:
+
+```bash
+aws ecs update-service \
+  --cluster "$(terraform output -raw ecs_cluster_name)" \
+  --service "$(terraform output -raw ecs_service_name)" \
+  --force-new-deployment
+```
+
+Then tail logs again and confirm the error does not appear for the new `oiva-agent` task stream. For a harder production setup, consider adding EventBridge automation that redeploys the ECS service after successful Secrets Manager rotation, or intentionally adjust the RDS password rotation policy.
+
+### Re-applying fails because a secret name already exists
+
+Secrets Manager may keep deleted secrets during a recovery window. If you destroyed and recreated the stack with the same `deployment_name`, either wait for the recovery window, restore the pending-deletion secret, or use a different `deployment_name`.
+
+For Terraform-created placeholder secrets, you can also force-delete the pending secrets immediately:
+
+```bash
+./utilities/force-delete-secrets.sh oiva
+```
+
+The argument must match `deployment_name` from `terraform.tfvars`.

@@ -1,5 +1,8 @@
 import type { ImageMetadata } from "astro";
 import jonathanHeadshot from "../assets/team/jonathan-mcnair.png";
+import stevenHeadshot from "../assets/team/steven-valenziano.png";
+import tiiaHeadshot from "../assets/team/tiia-rikama.png";
+import valerieHeadshot from "../assets/team/valerie-racine.png";
 
 export type TeamMember = {
   name: string;
@@ -24,6 +27,7 @@ export const teamMembers: TeamMember[] = [
     name: "Valerie Racine",
     location: "Sparks, NV, United States",
     initials: "VR",
+    headshot: valerieHeadshot,
     githubUrl: "https://github.com/v-racine",
     linkedinUrl: "https://www.linkedin.com/in/valerie-racine-743a08241/",
   },
@@ -31,6 +35,7 @@ export const teamMembers: TeamMember[] = [
     name: "Tiia Rikama",
     location: "Los Altos, CA, United States",
     initials: "TR",
+    headshot: tiiaHeadshot,
     githubUrl: "https://github.com/tiiarikama",
     linkedinUrl: "https://www.linkedin.com/in/tiia-rikama-02b491239/",
   },
@@ -38,6 +43,7 @@ export const teamMembers: TeamMember[] = [
     name: "Steven Valenziano",
     location: "Durham, NC, United States",
     initials: "SV",
+    headshot: stevenHeadshot,
     githubUrl: "https://github.com/svalenziano",
     linkedinUrl: "https://www.linkedin.com/in/stevenvalenziano/",
   },

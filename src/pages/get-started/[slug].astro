@@ -1,0 +1,38 @@
+---
+import { getCollection, render, type CollectionEntry } from "astro:content";
+import ContentPageLayout from "../../components/ContentPageLayout.astro";
+import { toSectionSidebarPages } from "../../lib/content";
+
+type GetStartedEntry = CollectionEntry<"getStarted">;
+
+export async function getStaticPaths() {
+  const entries = await getCollection("getStarted");
+
+  return entries.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props as { entry: GetStartedEntry };
+const entries = await getCollection("getStarted");
+const renderedEntries = await Promise.all(
+  entries.map(async (sectionEntry) => {
+    const { headings } = await render(sectionEntry);
+
+    return { entry: sectionEntry, headings };
+  }),
+);
+const { Content } = await render(entry);
+const pages = toSectionSidebarPages("getStarted", renderedEntries);
+---
+
+<ContentPageLayout
+  section="getStarted"
+  title={entry.data.title}
+  description={entry.data.description}
+  currentPageId={entry.id}
+  pages={pages}
+>
+  <Content />
+</ContentPageLayout>
