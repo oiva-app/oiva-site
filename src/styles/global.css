@@ -108,9 +108,9 @@
   --color-text-muted: #a9bab2;
   --color-text-subtle: #82968f;
 
-  --color-primary: #d9bd69;
-  --color-primary-hover: #efd27a;
-  --color-primary-soft: rgba(217, 189, 105, 0.14);
+  --color-primary: #a6c7a0;
+  --color-primary-hover: #b6d4b0;
+  --color-primary-soft: rgba(166, 199, 160, 0.14);
 
   --color-accent-yellow: #d9bd69;
   --color-accent-blue: #789ca0;
@@ -126,8 +126,8 @@
   --shadow-soft: 0 18px 60px rgba(0, 0, 0, 0.35);
   --shadow-card: 0 10px 32px rgba(0, 0, 0, 0.28);
 
-  --motif-line-color: rgba(217, 189, 105, 0.32);
-  --motif-dot-color: rgba(217, 189, 105, 0.34);
+  --motif-line-color: rgba(166, 199, 160, 0.32);
+  --motif-dot-color: rgba(166, 199, 160, 0.34);
   --motif-opacity-quiet: 0.18;
   --motif-opacity-medium: 0.3;
 }
@@ -192,6 +192,20 @@ select {
 :focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 3px;
+}
+
+/* Visually hidden but available to screen readers. */
+.sr-only {
+  border: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
 }
 
 h1,
