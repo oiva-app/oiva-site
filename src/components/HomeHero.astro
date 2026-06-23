@@ -29,7 +29,7 @@ import { withBase } from "../lib/urls";
 
   <script>
     // The verbs are already rendered (hidden) in the sizer, so read them from
-    // the DOM rather than injecting them — keeps this a hoisted, bundled module.
+    // the DOM rather than injecting them. Keeps this a hoisted, bundled module.
     const rotator = document.querySelector(".rotator");
     const word = rotator?.querySelector("[data-rotator-word]");
     const sizer = rotator?.querySelector(".rotator__sizer");
@@ -101,11 +101,6 @@ import { withBase } from "../lib/urls";
     text-wrap: balance;
   }
 
-  /* The verb is the last word on line 1, so the slot is reserved at the
-     widest verb's width (via the hidden sizer that stacks every verb in one
-     grid cell). The visible verb is left-aligned inside it, so the unused
-     width falls at the (invisible) end of the line: the centred line never
-     changes width, nothing shifts, and the verb simply crossfades in place. */
   .rotator {
     display: inline-grid;
     vertical-align: bottom;
@@ -126,9 +121,6 @@ import { withBase } from "../lib/urls";
   }
 
   .rotator__word {
-    /* A brighter/more saturated green than the body text so the swapping verb
-       stands out by luminance, staying in the green family (not the button
-       --color-primary, which is too close to the text colour). */
     color: #2f8d76;
     justify-self: start;
     transition:
