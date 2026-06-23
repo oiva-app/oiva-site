@@ -1,9 +1,10 @@
 ---
-import { getEntry, render } from "astro:content";
+import { getCollection, getEntry, render } from "astro:content";
 import ContentPageLayout from "../../components/ContentPageLayout.astro";
 import { toSinglePageSidebarPages } from "../../lib/content";
 
-const entry = await getEntry("caseStudy", "index");
+const entry = await getEntry("caseStudy", "index")
+  ?? (await getCollection("caseStudy")).find((candidate) => candidate.id === "index");
 
 if (!entry) {
   throw new Error("Missing case study index content entry.");

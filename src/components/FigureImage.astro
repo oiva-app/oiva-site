@@ -6,21 +6,49 @@ type Props = {
   alt: string;
   caption?: string;
   sourceUrl?: string;
+  modalSize?: "default" | "wide";
+  width?: "default" | "narrow" | "reduced" | "compact";
+  thumbnailVariant?: "default" | "cropped" | "square";
+  thumbnailAspectRatio?: string;
+  thumbnailPosition?: string;
+  frameVariant?: "default" | "matched";
 };
 
-const { src, alt, caption, sourceUrl } = Astro.props;
+const {
+  src,
+  alt,
+  caption,
+  sourceUrl,
+  modalSize = "default",
+  width = "default",
+  thumbnailVariant = "default",
+  thumbnailAspectRatio: providedThumbnailAspectRatio,
+  thumbnailPosition = "center",
+  frameVariant = "default",
+} = Astro.props;
+const thumbnailAspectRatio = providedThumbnailAspectRatio
+  ?? (thumbnailVariant === "square" || frameVariant === "matched" ? "1 / 1" : "auto");
 const fullSizeHref = sourceUrl ?? (typeof src === "string" ? src : src.src);
 const isSvg = typeof src !== "string" && src.format === "svg";
 ---
 
-<figure>
-  <a href={fullSizeHref}>
+<figure class:list={[`figure-image-${width}`]}>
+  <button
+    class:list={["figure-image-trigger", `figure-image-trigger-${thumbnailVariant}`]}
+    data-frame-variant={frameVariant}
+    style={`--thumbnail-aspect-ratio: ${thumbnailAspectRatio}; --thumbnail-position: ${thumbnailPosition};`}
+    type="button"
+    data-figure-modal-trigger
+    data-figure-modal-src={fullSizeHref}
+    data-figure-modal-alt={alt}
+    data-figure-modal-size={modalSize}
+  >
     {isSvg || typeof src === "string" ? (
       <img src={typeof src === "string" ? src : src.src} alt={alt} loading="lazy" />
     ) : (
       <Image src={src} alt={alt} widths={[640, 960, 1280, 1600]} sizes="(max-width: 900px) 100vw, 760px" />
     )}
-  </a>
+  </button>
   {caption && (
     <figcaption>
       <span>{caption}</span>
@@ -33,20 +61,74 @@ const isSvg = typeof src !== "string" && src.format === "svg";
     margin: var(--space-xl) 0;
   }
 
-  figure > a {
+  .figure-image-narrow {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: min(100%, 680px);
+  }
+
+  .figure-image-reduced {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 88%;
+  }
+
+  .figure-image-compact {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 80%;
+  }
+
+  .figure-image-trigger {
     background: var(--color-surface);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-card);
+    color: inherit;
+    cursor: zoom-in;
     display: block;
+    font: inherit;
     overflow: hidden;
     padding: var(--space-sm);
+    text-align: inherit;
+    width: 100%;
+  }
+
+  .figure-image-trigger:hover,
+  .figure-image-trigger:focus-visible {
+    border-color: var(--color-primary);
+  }
+
+  .figure-image-trigger:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--color-primary) 32%, transparent);
+    outline-offset: 3px;
   }
 
   img {
     display: block;
     height: auto;
     width: 100%;
+  }
+
+  .figure-image-trigger-cropped,
+  .figure-image-trigger-square {
+    aspect-ratio: var(--thumbnail-aspect-ratio);
+  }
+
+  .figure-image-trigger-cropped img,
+  .figure-image-trigger-square img {
+    height: 100%;
+    object-fit: cover;
+    object-position: var(--thumbnail-position);
+  }
+
+  .figure-image-trigger[data-frame-variant="matched"] {
+    aspect-ratio: var(--thumbnail-aspect-ratio);
+  }
+
+  .figure-image-trigger[data-frame-variant="matched"] img {
+    height: 100%;
+    object-fit: contain;
   }
 
   figcaption {

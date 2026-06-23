@@ -1,0 +1,35 @@
+---
+type Props = {
+  class?: string;
+  variant?: "equal" | "right-wide";
+};
+
+const { class: className = "", variant = "equal" } = Astro.props;
+---
+
+<div class:list={["figure-pair", `figure-pair-${variant}`, className]}>
+  <slot />
+</div>
+
+<style>
+  .figure-pair {
+    display: grid;
+    gap: var(--space-md);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: var(--space-xl) 0;
+  }
+
+  .figure-pair-right-wide {
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  }
+
+  .figure-pair :global(figure) {
+    margin: 0;
+  }
+
+  @media (max-width: 720px) {
+    .figure-pair {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -124,7 +124,7 @@ To add a new section to a single-page content file:
 
 Article figures should usually live in `src/assets/figures/`. Keep related images grouped in folders so they are easy to find later.
 
-To use a figure in an MDX page, import both the image and the `FigureImage` component at the top of the file after the frontmatter.
+To use a figure in an MDX page, import both the image and the `FigureImage` component at the top of the file after the frontmatter. `FigureImage` opens the full-size image in an in-page modal.
 
 ```mdx
 ---
@@ -147,7 +147,18 @@ import workflowImage from "../../assets/figures/700-agent/710-oiva-overview.exca
 
 Use clear `alt` text that describes the image for someone who cannot see it. Use `caption` when the page needs visible context under the figure.
 
-`FigureImage` also supports an optional `sourceUrl` if the full-size link should point somewhere other than the image file.
+`FigureImage` also supports an optional `sourceUrl` if the modal should use a full-size image source other than the imported image file.
+
+For before/after or other paired figures, wrap two `FigureImage` components in `FigurePair`:
+
+```mdx
+import FigurePair from "../../components/FigurePair.astro";
+
+<FigurePair>
+  <FigureImage src={beforeImage} alt="Before state." caption="Before." />
+  <FigureImage src={afterImage} alt="After state." caption="After." />
+</FigurePair>
+```
 
 ## Changing the Logo
 
