@@ -2,8 +2,10 @@
 import oivaLogoGreen from "../assets/logo/oiva_logo_green_01.svg";
 import oivaLogoWhite from "../assets/logo/oiva_logo_white_01.svg";
 import HomeHeroAtlasBackground from "../components/HomeHeroAtlasBackground.astro";
+import Video from "../components/Video.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { withBase } from "../lib/urls";
+import demoVideo from "../assets/video/oiva-demo.mp4";
 
 const description =
   "A self-hosted incident investigation agent that turns production alerts into evidence-backed investigation reports";
@@ -52,11 +54,8 @@ const description =
         <h2 id="home-demo-title">See Oiva receive an alert</h2>
         <p>A production alert arrives in Slack and starts an investigation workflow.</p>
       </div>
-      <div class="home-demo__media" aria-label="Slack alert demo video placeholder">
-        <!-- TODO: Replace this placeholder with /media/oiva-slack-alert-demo.mp4 when the demo video is available. -->
-        <div class="home-demo__placeholder">
-          <span>Slack alert demo video placeholder</span>
-        </div>
+      <div class="home-demo__media">
+        <Video src={demoVideo} />
       </div>
     </div>
   </section>
@@ -246,27 +245,6 @@ const description =
     height: 2.25rem;
     inset: 0 0 auto;
     position: absolute;
-  }
-
-  .home-demo__placeholder {
-    align-items: center;
-    aspect-ratio: 16 / 9;
-    background:
-      linear-gradient(135deg, color-mix(in srgb, var(--color-surface) 74%, transparent), color-mix(in srgb, var(--color-bg-soft) 66%, transparent)),
-      var(--color-card);
-    border: 0;
-    border-radius: 0;
-    color: var(--color-muted);
-    display: flex;
-    justify-content: center;
-    padding: var(--space-lg);
-    text-align: center;
-  }
-
-  .home-demo__placeholder span {
-    font-size: var(--text-sm);
-    font-weight: 700;
-    line-height: var(--leading-ui);
   }
 
   .home-steps {
