@@ -120,6 +120,10 @@
     width: fit-content;
   }
 
+  .figure-modal[data-figure-modal-size="wide"] .figure-modal-panel {
+    max-height: calc(90dvh + (2 * var(--space-sm)));
+  }
+
   .figure-modal-close {
     align-items: center;
     background: var(--color-surface-raised);
@@ -152,7 +156,7 @@
 
   .figure-modal-image {
     display: block;
-    height: min(82dvh, calc(100dvh - (2 * var(--space-md)) - (2 * var(--space-sm))));
+    height: min(90dvh, calc(100dvh - (2 * var(--space-md)) - (2 * var(--space-sm))));
     justify-self: center;
     max-height: calc(100dvh - (2 * var(--space-md)) - (2 * var(--space-sm)));
     max-width: calc(100vw - (2 * var(--space-md)) - (2 * var(--space-sm)));
@@ -160,7 +164,8 @@
   }
 
   .figure-modal[data-figure-modal-size="wide"] .figure-modal-image {
-    height: calc(100dvh - (2 * var(--space-md)) - (2 * var(--space-sm)));
+    height: auto;
+    max-height: 90dvh;
     max-width: calc(100vw - (2 * var(--space-md)) - (2 * var(--space-sm)));
     width: auto;
   }
@@ -174,6 +179,11 @@
       max-height: calc(100dvh - (2 * var(--space-sm)));
       max-width: calc(100vw - (2 * var(--space-sm)));
       padding: var(--space-xs);
+    }
+
+    .figure-modal[data-figure-modal-size="wide"] .figure-modal-panel {
+      max-height: calc(100dvh - (2 * var(--space-sm)));
+      max-width: calc(100vw - (2 * var(--space-sm)));
     }
 
     .figure-modal-close {

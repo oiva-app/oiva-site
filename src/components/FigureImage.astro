@@ -22,10 +22,12 @@ const {
   modalSize = "default",
   width = "default",
   thumbnailVariant = "default",
-  thumbnailAspectRatio = thumbnailVariant === "square" ? "1 / 1" : "auto",
+  thumbnailAspectRatio: providedThumbnailAspectRatio,
   thumbnailPosition = "center",
   frameVariant = "default",
 } = Astro.props;
+const thumbnailAspectRatio = providedThumbnailAspectRatio
+  ?? (thumbnailVariant === "square" || frameVariant === "matched" ? "1 / 1" : "auto");
 const fullSizeHref = sourceUrl ?? (typeof src === "string" ? src : src.src);
 const isSvg = typeof src !== "string" && src.format === "svg";
 ---
@@ -121,7 +123,7 @@ const isSvg = typeof src !== "string" && src.format === "svg";
   }
 
   .figure-image-trigger[data-frame-variant="matched"] {
-    aspect-ratio: 1 / 1;
+    aspect-ratio: var(--thumbnail-aspect-ratio);
   }
 
   .figure-image-trigger[data-frame-variant="matched"] img {
