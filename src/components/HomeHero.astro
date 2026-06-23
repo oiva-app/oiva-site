@@ -1,0 +1,200 @@
+---
+import HomeHeroAtlasBackground from "./HomeHeroAtlasBackground.astro";
+import { heroLeadIn, heroSubtext, heroTrailing, heroVerbs } from "../data/home";
+import { withBase } from "../lib/urls";
+---
+
+<section class="home-hero" aria-labelledby="home-title">
+  <HomeHeroAtlasBackground />
+  <div class="home-hero__inner">
+    <div class="home-hero__content">
+      <h1 id="home-title" class="home-hero__headline">
+        <span class="sr-only">{heroLeadIn} {heroVerbs[0]} {heroTrailing}</span>
+        <span aria-hidden="true">
+          {heroLeadIn} <span class="rotator">
+            <span class="rotator__sizer" aria-hidden="true">
+              {heroVerbs.map((verb) => <span>{verb}</span>)}
+            </span>
+            <span class="rotator__word" data-rotator-word>{heroVerbs[0]}</span>
+          </span><br />{heroTrailing}
+        </span>
+      </h1>
+      <p class="home-hero__subtext">{heroSubtext}</p>
+      <div class="button-row home-hero__actions" aria-label="Primary links">
+        <a class="button button-primary" href={withBase("/case-study/")}>Case Study</a>
+        <a class="button button-secondary" href={withBase("/get-started/manual-setup/")}>Get Started</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // The verbs are already rendered (hidden) in the sizer, so read them from
+    // the DOM rather than injecting them — keeps this a hoisted, bundled module.
+    const rotator = document.querySelector(".rotator");
+    const word = rotator?.querySelector("[data-rotator-word]");
+    const sizer = rotator?.querySelector(".rotator__sizer");
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    if (word && sizer && !reduceMotion.matches) {
+      const verbs = [...sizer.querySelectorAll(":scope > span")].map(
+        (span) => span.textContent?.trim() ?? "",
+      );
+
+      if (verbs.length > 1) {
+        const FADE_MS = 300;
+        const HOLD_MS = 2600;
+        let index = 0;
+
+        setInterval(() => {
+          word.classList.add("is-out");
+          setTimeout(() => {
+            index = (index + 1) % verbs.length;
+            word.textContent = verbs[index];
+            word.classList.remove("is-out");
+          }, FADE_MS);
+        }, HOLD_MS);
+      }
+    }
+  </script>
+</section>
+
+<style>
+  .home-hero {
+    align-items: center;
+    contain: paint;
+    display: flex;
+    isolation: isolate;
+    justify-content: center;
+    margin: 0;
+    max-width: none;
+    min-height: calc(100svh - var(--header-height));
+    overflow: clip;
+    padding: clamp(var(--space-2xl), 6vw, var(--space-4xl)) var(--space-page) var(--space-3xl);
+    position: relative;
+  }
+
+  .home-hero__inner {
+    margin: 0 auto;
+    max-width: var(--container-wide);
+    position: relative;
+    width: 100%;
+    z-index: 1;
+  }
+
+  .home-hero__content {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xl);
+    margin: 0 auto;
+    max-width: 52rem;
+    text-align: center;
+  }
+
+  .home-hero__headline {
+    color: var(--color-text);
+    font-size: clamp(var(--text-2xl), 6vw, 4rem);
+    font-weight: 700;
+    letter-spacing: 0;
+    line-height: 1.12;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  /* The verb is the last word on line 1, so the slot is reserved at the
+     widest verb's width (via the hidden sizer that stacks every verb in one
+     grid cell). The visible verb is left-aligned inside it, so the unused
+     width falls at the (invisible) end of the line: the centred line never
+     changes width, nothing shifts, and the verb simply crossfades in place. */
+  .rotator {
+    display: inline-grid;
+    vertical-align: bottom;
+  }
+
+  .rotator > * {
+    grid-area: 1 / 1;
+  }
+
+  .rotator__sizer {
+    display: grid;
+    pointer-events: none;
+    visibility: hidden;
+  }
+
+  .rotator__sizer > span {
+    grid-area: 1 / 1;
+  }
+
+  .rotator__word {
+    /* A brighter/more saturated green than the body text so the swapping verb
+       stands out by luminance, staying in the green family (not the button
+       --color-primary, which is too close to the text colour). */
+    color: #2f8d76;
+    justify-self: start;
+    transition:
+      opacity 0.3s ease,
+      transform 0.3s ease;
+  }
+
+  :global([data-theme="dark"]) .rotator__word {
+    color: #65745d;
+  }
+
+  .rotator__word.is-out {
+    opacity: 0;
+    transform: translateY(-0.18em);
+  }
+
+  .home-hero__subtext {
+    color: var(--color-muted);
+    font-size: var(--text-md);
+    font-weight: 500;
+    line-height: 1.6;
+    margin: 0;
+    max-width: 42rem;
+    text-wrap: balance;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rotator,
+    .rotator__word {
+      transition: none;
+    }
+  }
+
+  .home-hero__actions .button {
+    background-clip: padding-box;
+  }
+
+  .home-hero__actions .button-primary {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+
+  .home-hero__actions .button-secondary {
+    background: var(--color-surface-raised);
+    border-color: var(--border-strong);
+  }
+
+  @media (max-width: 920px) {
+    .home-hero {
+      min-height: auto;
+      padding-block: var(--space-2xl) var(--space-3xl);
+    }
+  }
+
+  @media (max-width: 620px) {
+    .home-hero {
+      padding-block: var(--space-xl) var(--space-2xl);
+    }
+
+    .home-hero__content {
+      gap: var(--space-lg);
+    }
+
+    .home-hero__actions {
+      align-items: stretch;
+      flex-direction: column;
+    }
+  }
+</style>

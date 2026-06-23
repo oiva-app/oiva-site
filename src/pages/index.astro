@@ -1,49 +1,12 @@
 ---
-import oivaLogoGreen from "../assets/logo/oiva_logo_green_01.svg";
-import oivaLogoWhite from "../assets/logo/oiva_logo_white_01.svg";
-import HomeHeroAtlasBackground from "../components/HomeHeroAtlasBackground.astro";
+import HomeHero from "../components/HomeHero.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { heroSubtext } from "../data/home";
 import { withBase } from "../lib/urls";
-
-const description =
-  "A self-hosted incident investigation agent that turns production alerts into evidence-backed investigation reports";
 ---
 
-<BaseLayout title="Oiva" bareTitle description={description}>
-  <section class="home-hero" aria-labelledby="home-title">
-    <HomeHeroAtlasBackground />
-    <div class="home-hero__inner">
-      <div class="home-hero__visual" aria-hidden="true">
-        <div class="home-hero__logo">
-          <img
-            class="home-hero__logo-mark home-hero__logo-mark-light"
-            src={oivaLogoGreen.src}
-            width={oivaLogoGreen.width}
-            height={oivaLogoGreen.height}
-            alt=""
-            loading="eager"
-            decoding="async"
-          />
-          <img
-            class="home-hero__logo-mark home-hero__logo-mark-dark"
-            src={oivaLogoWhite.src}
-            width={oivaLogoWhite.width}
-            height={oivaLogoWhite.height}
-            alt=""
-            loading="eager"
-            decoding="async"
-          />
-        </div>
-      </div>
-      <div class="home-hero__content">
-        <h1 id="home-title" class="home-hero__tagline">{description}</h1>
-        <div class="button-row home-hero__actions" aria-label="Primary links">
-          <a class="button button-primary" href={withBase("/case-study/")}>Case Study</a>
-          <a class="button button-secondary" href={withBase("/get-started/manual-setup/")}>Get Started</a>
-        </div>
-      </div>
-    </div>
-  </section>
+<BaseLayout title="Oiva" bareTitle description={heroSubtext}>
+  <HomeHero />
 
   <section class="home-section home-demo" aria-labelledby="home-demo-title">
     <div class="home-section__inner home-demo__inner">
@@ -97,101 +60,6 @@ const description =
 </BaseLayout>
 
 <style>
-  .home-hero {
-    align-items: flex-start;
-    contain: paint;
-    display: flex;
-    isolation: isolate;
-    margin: 0;
-    max-width: none;
-    min-height: calc(100svh - var(--header-height));
-    overflow: clip;
-    padding: clamp(var(--space-2xl), 6vw, var(--space-4xl)) var(--space-page) var(--space-3xl);
-    position: relative;
-  }
-
-  .home-hero__inner {
-    align-items: center;
-    display: grid;
-    gap: var(--space-3xl);
-    grid-template-columns: minmax(18rem, 0.95fr) minmax(0, 1.05fr);
-    margin: 0 auto;
-    max-width: var(--container-wide);
-    min-height: calc(100svh - var(--header-height) - clamp(var(--space-2xl), 6vw, var(--space-4xl)) - var(--space-3xl));
-    position: relative;
-    width: 100%;
-    z-index: 1;
-  }
-
-  .home-hero__visual {
-    grid-column: 1;
-    grid-row: 1;
-    min-height: clamp(18rem, 44vw, 34rem);
-    min-width: 0;
-    padding-top: clamp(2rem, 5vw, 5rem);
-    position: relative;
-  }
-
-  .home-hero__logo {
-    align-items: center;
-    display: flex;
-    justify-content: center;
-    inset: 0;
-    min-width: 0;
-    position: relative;
-    z-index: 1;
-  }
-
-  .home-hero__logo-mark {
-    display: block;
-    max-height: clamp(18rem, 40vw, 31rem);
-    object-fit: contain;
-    width: min(100%, 25rem);
-  }
-
-  .home-hero__logo-mark-dark {
-    display: none;
-  }
-
-  :global([data-theme="dark"]) .home-hero__logo-mark-light {
-    display: none;
-  }
-
-  :global([data-theme="dark"]) .home-hero__logo-mark-dark {
-    display: block;
-  }
-
-  .home-hero__content {
-    grid-column: 2;
-    grid-row: 1;
-    min-width: 0;
-    padding: clamp(var(--space-md), 3vw, var(--space-xl)) 0;
-  }
-
-  .home-hero__tagline {
-    color: var(--color-text);
-    font-size: clamp(var(--text-xl), 4.2vw, 3.6rem);
-    font-weight: 700;
-    letter-spacing: 0;
-    line-height: 1.1;
-    margin: 0 0 var(--space-xl);
-    max-width: 44rem;
-  }
-
-  .home-hero__actions .button {
-    background-clip: padding-box;
-  }
-
-  .home-hero__actions .button-primary {
-    background: var(--color-primary);
-    border-color: var(--color-primary);
-  }
-
-  .home-hero__actions .button-secondary {
-    background: var(--color-surface-raised);
-    border-color: var(--border-strong);
-  }
-
   .home-section {
     padding: var(--space-section) var(--space-page) 0;
   }
@@ -320,50 +188,8 @@ const description =
   }
 
   @media (max-width: 920px) {
-    .home-hero__inner,
     .home-demo__inner {
       grid-template-columns: 1fr;
-    }
-
-    .home-hero {
-      gap: var(--space-2xl);
-      min-height: auto;
-      padding-block: var(--space-2xl) var(--space-3xl);
-    }
-
-    .home-hero__inner {
-      gap: var(--space-xl);
-      min-height: auto;
-    }
-
-    .home-hero__visual {
-      grid-column: 1;
-      grid-row: 1;
-      min-height: auto;
-    }
-
-    .home-hero__content {
-      grid-column: 1;
-      grid-row: 2;
-      padding: 0;
-      text-align: center;
-    }
-
-    .home-hero__logo {
-      justify-content: center;
-    }
-
-    .home-hero__logo-mark {
-      max-height: clamp(14rem, 42vw, 20rem);
-      width: min(100%, 17rem);
-    }
-
-    .home-hero__tagline {
-      margin-inline: auto;
-    }
-
-    .home-hero__actions {
-      justify-content: center;
     }
 
     .home-steps {
@@ -372,20 +198,6 @@ const description =
   }
 
   @media (max-width: 620px) {
-    .home-hero {
-      padding-block: var(--space-xl) var(--space-2xl);
-    }
-
-    .home-hero__inner {
-      gap: var(--space-lg);
-    }
-
-    .home-hero__logo-mark {
-      max-height: clamp(13rem, 56vw, 17rem);
-      width: min(100%, 15rem);
-    }
-
-    .home-hero__actions,
     .home-next-steps__links {
       align-items: stretch;
       flex-direction: column;
