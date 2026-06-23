@@ -9,6 +9,10 @@
 
 <script>
   (() => {
+    const figureModalWindow = window as Window & {
+      figureModalController?: AbortController;
+    };
+
     const setupFigureModal = () => {
       const modal = document.querySelector("[data-figure-modal]");
 
@@ -17,10 +21,10 @@
       }
 
       modal.dataset.initialized = "true";
-      window.figureModalController?.abort?.();
+      figureModalWindow.figureModalController?.abort?.();
 
       const controller = new AbortController();
-      window.figureModalController = controller;
+      figureModalWindow.figureModalController = controller;
       const { signal } = controller;
 
       const image = modal.querySelector("[data-figure-modal-image]");
