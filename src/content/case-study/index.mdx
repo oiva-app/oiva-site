@@ -5,7 +5,6 @@ order: 1
 sidebarLabel: "Case Study"
 ---
 import Figure from "../../components/Figure.astro"
-import FigureImage from "../../components/FigureImage.astro";
 import FigurePair from "../../components/FigurePair.astro";
 import Video from "../../components/Video.astro";
 
@@ -306,19 +305,19 @@ The experiments share a common design. We inject latency and error faults at the
 
 The value of the evals dataset lies not in the final pass/fail grade, but in the systematic blind spots that each run reveals. Each experiment provides new areas for improvement that feed back into the agent’s design, improving its performance in development and production.
 
-<FigurePair variant="right-wide">
-  <FigureImage
+  <Figure
     src={beforeEvalsImage}
     alt="Diagram showing that before formal evals it was difficult to judge agent output quality or compare investigations across versions."
     caption="Before evals, it was difficult to gauge agent output quality in absolute terms or relative to previous investigations."
+    
   />
 
-  <FigureImage
+  <Figure
     src={afterEvalsImage}
     alt="Diagram showing that after implementing evals, agent performance can be measured against goals and compared across versions."
     caption="After evals, we could evaluate agent performance against specific goals and compare versions more effectively."
+    clickable={true}
   />
-</FigurePair>
 
 #### Improving the Foundation of the Telemetry Investigation
 
@@ -329,13 +328,13 @@ Additionally, running evals with canned alerts was difficult because the agent m
 After this change, malformed tool calls at the beginning of the investigation dropped from \~90% to \~10%, and the agent used a relevant time window 80% of the time, up from less than half.
 
 <FigurePair>
-  <FigureImage
+  <Figure
     src={beforeEnrichAlertImage}
     alt="Diagram showing the agent starting an investigation without help and struggling to retrieve the query results that triggered the alert."
     caption="Letting the agent start without help: the agent often struggled to get the query results that triggered the alert."
   />
 
-  <FigureImage
+  <Figure
     src={afterEnrichAlertImage}
     alt="Diagram showing the custom enrich alert tool giving the agent useful alert context before the investigation begins."
     caption="Giving the agent a hand: `enrich_alert` provides useful context at the start, improving subsequent tool calls and reports."
@@ -346,32 +345,28 @@ After this change, malformed tool calls at the beginning of the investigation dr
 
 At its core, Oiva is a self-hosted, cloud-neutral application that runs in a container and connects to a relational database. To streamline startup for new users, we include a fully provisioned deployment option on Amazon Web Services (AWS), defined with Terraform.
 
-<FigureImage
+<Figure
   src={abstractInfraImage}
   alt="High-level infrastructure diagram showing Oiva's simple deployment architecture."
   caption="At a high level, Oiva's architecture is simple; the detailed infrastructure appears below."
-  modalSize="wide"
-  width="narrow"
 />
 
 ### One Application Service vs. Split Services
 
 Oiva runs both the HTTP API and the background workflow in a single container. Splitting into separate web and worker services would improve independent scaling and fault isolation, but requires more deployment units, coordination, and possibly a queue boundary. A single-service design simplifies the architecture and matches the expected workload — likely no more than 15 alerts per week. This effectively trades increased infrastructure complexity for some code complexity, as resources must be allocated and released for each investigation.
 
-<FigureImage
+<Figure
   src={fargateLongRunningImage}
   alt="Diagram of a single long-running ECS task that handles all of Oiva's duties, including alert ingestion and investigations."
   caption="A long-running ECS task that handles all of Oiva's duties makes for simple infrastructure, but requires more code complexity, hidden in this diagram."
-  modalSize="wide"
-  width="narrow"
+  style={{ maxWidth: "800px"}}
 />
 
-<FigureImage
+<Figure
   src={fargateEphemeralImage}
   alt="Diagram of a long-running ECS task for alert ingestion that spins up a new, ephemeral ECS task for each investigation."
   caption="Keeping alert ingestion in a long-running ECS task and spinning up a new task per investigation would reduce some code complexity, but introduces new challenges — including making it harder to develop and test locally."
-  modalSize="wide"
-  width="narrow"
+  style={{ maxWidth: "1100px"}}
 />
 
 ### Key Decisions for the Provisioned AWS Deployment
@@ -382,12 +377,10 @@ Terraform encodes the architecture as a reusable module that includes the networ
 
 #### Running Containers With Fargate
 
-<FigureImage
+<Figure
   src={ecsOnFargate}
   alt="Diagram illustrating ECS relationship with fargate.  ECS manages a Task, which runs on Fargate."
   caption="Oiva runs on ECS with Fargate to maximize uptime and minimize maintenance overhead"
-  modalSize="wide"
-  width="narrow"
 />
 
 For compute, we chose Amazon ECS with Fargate. ECS is AWS’s container orchestration service, and Fargate is its serverless container runtime: users provide a container image and resource settings, while AWS runs the container without users having to manage virtual machines.
@@ -405,7 +398,7 @@ Oiva needs a public URL because Slack and Honeycomb send webhook requests to it.
 For persistence, we chose RDS and S3, AWS’s managed relational database and object storage services, respectively. Running Postgres on RDS gives Oiva durable incident and workflow state. S3 stores knowledge base files that contain architectural and operational information about the user’s application.
 
 Simpler alternatives include bundling knowledge files into the container image or self-hosting Postgres in the application environment, but these options complicate updates and degrade reliability. RDS and S3 provide encryption, private access, and managed durability with less operational work than the alternatives.
-<FigureImage
+<Figure
   src={azReplicationImage}
   alt="Infrastructure diagram showing Oiva replicated across two availability zones with ECS and RDS failover."
   caption="Oiva can continue operating if one availability zone degrades by promoting the database replica and starting a task in the second zone."
@@ -422,7 +415,7 @@ Finally, Oiva’s application secrets are stored in AWS’s Secrets Manager rath
 Overall, the provisioned infrastructure favors a secure, reproducible, low-maintenance
 deployment over maximum scalability or the lowest possible cost.
 
-<FigureImage
+<Figure
   src={finalInfraImage}
   alt="Final deployed infrastructure diagram for Oiva's provisioned AWS deployment."
   caption="Final deployed infrastructure."

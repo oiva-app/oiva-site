@@ -67,7 +67,7 @@ export default function Figure({
           margin: "var(--space-xl) 20px",
           display: "flex",
           flexDirection: "column",
-          alignContent: "center",
+          alignItems: "center",
           gap: "10px",
         }}
       >
@@ -83,7 +83,7 @@ export default function Figure({
           }}
         />
         <figcaption
-          style={{ color: "var(--color-text-muted)", textAlign: "center" }}
+          style={{ color: "var(--color-text-muted)", textAlign: "center", maxWidth: "500px" }}
         >
           {caption}
         </figcaption>
