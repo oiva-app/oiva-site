@@ -28,13 +28,9 @@ import { withBase } from "../lib/urls";
   </div>
 
   <script>
-    // Re-run on every astro:page-load so the rotation starts after client-side
-    // (View Transitions) navigation, not just the initial load. The interval
-    // handle lives at module scope and is cleared at the top of each page-load,
-    // so it never stacks and is torn down when navigating away (no leak).
     let verbInterval;
 
-    document.addEventListener("astro:page-load", () => {
+    const initializeRotator = () => {
       clearInterval(verbInterval);
 
       const rotator = document.querySelector(".rotator");
@@ -60,7 +56,9 @@ import { withBase } from "../lib/urls";
           word.classList.remove("is-out");
         }, FADE_MS);
       }, HOLD_MS);
-    });
+    };
+
+    initializeRotator();
   </script>
 </section>
 

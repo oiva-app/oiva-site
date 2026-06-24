@@ -296,8 +296,6 @@ function getHeadingHref(page: SectionPage, slug: string) {
 
   if (document.documentElement.dataset.mobileMenuListenerReady !== "true") {
     document.documentElement.dataset.mobileMenuListenerReady = "true";
-    document.addEventListener("astro:page-load", initializeMobileMenu);
-    document.addEventListener("astro:page-load", initializeNavDropdowns);
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
         closeAllNavDropdowns();

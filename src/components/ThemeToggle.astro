@@ -67,11 +67,6 @@ const { class: className = "" } = Astro.props;
   };
 
   initializeThemeToggles();
-
-  if (document.documentElement.dataset.themeToggleListenerReady !== "true") {
-    document.documentElement.dataset.themeToggleListenerReady = "true";
-    document.addEventListener("astro:page-load", initializeThemeToggles);
-  }
 </script>
 
 <style>
