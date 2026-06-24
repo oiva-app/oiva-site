@@ -2,7 +2,10 @@
 import { defineConfig } from 'astro/config';
 import mdx from '@astrojs/mdx';
 import { unified } from '@astrojs/markdown-remark';
+import { visualizer } from "rollup-plugin-visualizer";
 import GithubSlugger from 'github-slugger';
+
+import react from '@astrojs/react';
 
 const anchorableHeadingTags = new Set(['h1', 'h2', 'h3', 'h4', 'h5', 'h6']);
 
@@ -123,5 +126,11 @@ export default defineConfig({
       rehypePlugins: [rehypeHeadingAnchors],
     }),
   },
-  integrations: [mdx()],
+  integrations: [mdx(), react()],
+  vite: {
+    plugins: [visualizer({
+      emitFile: true,
+      filename: "stats.html",
+    })]
+  }
 });

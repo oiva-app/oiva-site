@@ -13,7 +13,16 @@
   },
   "dependencies": {
     "@astrojs/mdx": "^6.0.3",
+    "@astrojs/react": "^6.0.0",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
     "astro": "^6.4.6",
-    "github-slugger": "^2.0.0"
+    "github-slugger": "^2.0.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "yet-another-react-lightbox": "^3.32.0"
+  },
+  "devDependencies": {
+    "rollup-plugin-visualizer": "^7.0.1"
   }
 }
