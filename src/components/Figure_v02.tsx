@@ -2,7 +2,6 @@ import { useState } from "react";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 
-
 type FigureProps = {
   src: string;
   alt: string;
@@ -21,13 +20,17 @@ export default function Figure({ src, alt, caption }: FigureProps) {
           alt={alt}
           style={{ width: "100%", height: "auto", cursor: "pointer" }}
         />
-        <figcaption>{caption}</figcaption>
+        <figcaption style={{ color: "var(--color-text-muted)" }}>
+          {caption}
+        </figcaption>
       </figure>
 
       <Lightbox
         open={visible}
         close={() => setVisible(false)}
+        // Only supports a single slide!
         slides={[{ src }]}
+        
         render={{
           // Hide prev/next buttons
           buttonPrev: () => null,
