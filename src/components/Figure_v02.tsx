@@ -13,7 +13,7 @@ export default function Figure({ src, alt, caption }: FigureProps) {
 
   return (
     <>
-      <figure>
+      <figure style={{ margin: "var(--space-xl) 10px" }}>
         <img
           onClick={() => setVisible(true)}
           src={src}
