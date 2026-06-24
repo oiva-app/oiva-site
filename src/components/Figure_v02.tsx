@@ -2,38 +2,44 @@ import { useState } from "react";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 
-const slides = [{ src: "/src/assets/figures/900-finals/export/101.svg" }];
 
-export default function Gallery() {
+type FigureProps = {
+  src: string | { src: string };
+  alt: string;
+  caption: string;
+};
+
+export default function Figure({ src, alt, caption }: FigureProps) {
   const [visible, setVisible] = useState(false);
+
+  let imagePath: string = ""
+
+  if (typeof src !== "string") {
+    imagePath = src.src
+  } else {
+    imagePath = src
+  }
+
   return (
     <>
-      <div style={{ display: "block" }}>
-        {slides.map((s, i) => (
-          <button
-            key={i}
-            onClick={() => setVisible(true)}
-            style={{
-              width: "100%",
-              height: "auto",
-              padding: 0,
-              border: 0,
-              cursor: "pointer",
-              background: "none",
-            }}
-          >
-            <img src={s.src} alt="" style={{ width: "100%", height: "auto" }} />
-          </button>
-        ))}
-      </div>
+      <figure>
+        <img
+          onClick={() => setVisible(true)}
+          src={imagePath}
+          alt={alt}
+          style={{ width: "100%", height: "auto", cursor: "pointer" }}
+        />
+        <figcaption>{caption}</figcaption>
+      </figure>
+
       <Lightbox
         open={visible}
         close={() => setVisible(false)}
-        slides={slides}
+        slides={[{ src: imagePath }]}
         render={{
           // Hide prev/next buttons if not needed
-          buttonPrev: slides.length <= 1 ? () => null : undefined,
-          buttonNext: slides.length <= 1 ? () => null : undefined,
+          buttonPrev: () => null,
+          buttonNext: () => null,
 
           // Workaround: forces the image to enlarge to fill lightbox
           slide: ({ slide }) => (

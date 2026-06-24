@@ -4,7 +4,7 @@ description: "A case study covering Oiva's problem domain, design, and future wo
 order: 1
 sidebarLabel: "Case Study"
 ---
-import Gallery from "../../components/Figure_v02"
+import Figure from "../../components/Figure_v02"
 import FigureImage from "../../components/FigureImage.astro";
 import FigurePair from "../../components/FigurePair.astro";
 import Video from "../../components/Video.astro";
@@ -38,7 +38,7 @@ import ecsOnFargate from "../../assets/figures/900-finals/export/620-fargate.svg
 
 ## Overview: What is Oiva?
 
-<Gallery client:visible />
+<Figure src={fargateEphemeralImage.src} alt="tktk" caption="lorem ipsum" client:visible />
 
 Oiva is a self-hosted, open-source service for AI-assisted incident investigation. When a production alert fires, Oiva authenticates that alert and launches an investigation that queries the team’s existing observability stack and Git repositories. Oiva then returns a structured report with findings and a supporting evidence trail, easing the on-call engineer’s cognitive load and aiming to reduce time-to-resolution by compressing the initial context-gathering phase.
 
