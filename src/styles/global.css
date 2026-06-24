@@ -582,6 +582,10 @@ pre code {
   color: var(--color-text-muted);
 }
 
+[data-theme="dark"] .invert-when-dark[src*=".svg"] {
+filter: invert(1) hue-rotate(180deg);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

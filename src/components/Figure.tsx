@@ -34,6 +34,7 @@ export default function Figure({
           // Workaround: forces the image to enlarge to fill lightbox
           slide: ({ slide }) => (
             <img
+              className="invert-when-dark"
               src={slide.src}
               alt={alt}
               style={{
@@ -72,6 +73,7 @@ export default function Figure({
         }}
       >
         <img
+          className="invert-when-dark"
           onClick={clickable ? () => setVisible(true) : () => {}}
           src={src}
           alt={alt}
