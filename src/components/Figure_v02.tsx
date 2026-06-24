@@ -7,17 +7,47 @@ const slides = [
 ];
 
 export default function Gallery() {
-  const [visible, setVisible ] = useState(false)
+  const [visible, setVisible] = useState(false);
   return (
     <>
       <div style={{ display: "block" }}>
         {slides.map((s, i) => (
-          <button key={i} onClick={() => setVisible(true)} style={{ width: "100%", height: "auto", padding: 0, border: 0, cursor: "pointer", background: "none" }}>
+          <button
+            key={i}
+            onClick={() => setVisible(true)}
+            style={{
+              width: "100%",
+              height: "auto",
+              padding: 0,
+              border: 0,
+              cursor: "pointer",
+              background: "none",
+            }}
+          >
             <img src={s.src} alt="" style={{ width: "100%", height: "auto" }} />
           </button>
         ))}
       </div>
-      <Lightbox open={visible} close={() => setVisible(false)} slides={slides} />
+      <Lightbox
+        open={visible}
+        close={() => setVisible(false)}
+        slides={slides}
+        render={{
+          buttonPrev: slides.length <= 1 ? () => null : undefined,
+          buttonNext: slides.length <= 1 ? () => null : undefined,
+        }}
+        carousel={{ padding: 0, spacing: 0 }}
+        styles={{
+          container: {
+            background: "var(--color-surface)",
+            padding: 0,
+            margin: 0,
+          },
+          slide: {
+            padding: 0,
+          },
+        }}
+      />
     </>
   );
 }
