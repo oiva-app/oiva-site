@@ -1,362 +1,41 @@
----
-const BACKGROUND_HEIGHT = 78000;
-const GLOBAL_CLOSE_Y = BACKGROUND_HEIGHT + 360;
-const LEFT_EDGE = -260;
-const RIGHT_EDGE = 1860;
-const HILL_BASE_LEFT = -80;
-
-const hillClasses = [
-  "hill-mist-blue",
-  "hill-paper-shadow",
-  "hill-pale-green",
-  "hill-sage",
-  "hill-yellow",
-  "hill-rust-mid",
-  "hill-blue-low",
-  "hill-slate-low",
-  "hill-green-low",
-  "hill-gold-low",
-  "hill-deep-blue",
-];
-
-const hillCurves = [
-  { startY: 650, curve: "C110 720 310 780 520 720 C730 660 850 548 1058 520 C1258 494 1460 560 1680 650", endY: 650 },
-  { startY: 748, curve: "C70 650 208 676 360 760 C544 862 714 966 936 924 C1116 890 1250 756 1468 740 C1566 734 1632 788 1680 842", endY: 842 },
-  { startY: 1184, curve: "C92 1238 260 1222 444 1138 C620 1058 746 812 986 850 C1184 882 1320 1078 1500 1068 C1582 1064 1638 1018 1680 970", endY: 970 },
-  { startY: 1518, curve: "C34 1358 156 1340 292 1448 C418 1548 516 1590 660 1460 C792 1340 906 1278 1054 1398 C1192 1510 1304 1510 1436 1370 C1526 1274 1610 1316 1680 1408", endY: 1408 },
-  { startY: 1804, curve: "C78 1690 202 1772 352 1684 C504 1594 650 1618 798 1760 C948 1904 1052 1876 1188 1698 C1324 1518 1500 1486 1680 1636", endY: 1636 },
-  { startY: 2126, curve: "C42 1988 144 1998 272 2090 C404 2184 522 2142 642 1968 C768 1784 906 1840 1044 2052 C1174 2252 1292 2170 1426 1960 C1522 1810 1618 1908 1680 2032", endY: 2032 },
-  { startY: 2464, curve: "C94 2288 240 2222 416 2388 C564 2526 696 2604 842 2412 C986 2226 1106 2208 1244 2388 C1382 2568 1518 2502 1680 2352", endY: 2352 },
-  { startY: 2778, curve: "C32 2630 150 2632 286 2738 C426 2848 540 2814 676 2638 C814 2458 956 2498 1088 2730 C1212 2948 1328 2900 1468 2658 C1546 2524 1626 2606 1680 2732", endY: 2732 },
-  { startY: 3100, curve: "C86 2920 240 3008 392 2892 C552 2770 694 2858 842 3090 C976 3300 1100 3262 1248 3032 C1398 2798 1540 2840 1680 3098", endY: 3098 },
-  { startY: 3484, curve: "C64 3346 202 3324 356 3460 C502 3588 626 3580 772 3398 C920 3214 1068 3224 1216 3446 C1350 3648 1500 3602 1680 3462", endY: 3462 },
-  { startY: 3858, curve: "C48 3718 178 3772 330 3678 C486 3582 644 3650 800 3836 C944 4008 1070 3986 1218 3780 C1368 3572 1514 3638 1680 3848", endY: 3848 },
-];
-
-const hillRepeats = [
-  { x: 0, y: 0, colorOrder: ["hill-mist-blue", "hill-paper-shadow", "hill-pale-green", "hill-sage", "hill-yellow", "hill-rust-mid", "hill-blue-low", "hill-slate-low", "hill-green-low", "hill-gold-low", "hill-deep-blue"] },
-  { x: -40, y: 2350, colorOrder: ["hill-pale-green", "hill-gold-low", "hill-rust-mid", "hill-mist-blue", "hill-deep-blue", "hill-green-low", "hill-paper-shadow", "hill-sage", "hill-yellow", "hill-blue-low", "hill-yellow"] },
-  { x: 88, y: 4700, fadeStartOffset: 2200, fadeLength: 1500, colorOrder: ["hill-yellow", "hill-pale-green", "hill-deep-blue", "hill-paper-shadow", "hill-rust-mid", "hill-gold-low", "hill-pale-green", "hill-yellow", "hill-green-low", "hill-rust-mid", "hill-paper-shadow"] },
-  { x: -32, y: 7050, fadeStartOffset: 2200, fadeLength: 1500, colorOrder: ["hill-rust-mid", "hill-mist-blue", "hill-yellow", "hill-pale-green", "hill-gold-low", "hill-rust-mid", "hill-deep-blue", "hill-green-low", "hill-yellow", "hill-paper-shadow", "hill-rust-mid"] },
-  { x: -104, y: 9300, fadeStartOffset: 2200, fadeLength: 1500, colorOrder: ["hill-rust-mid", "hill-mist-blue", "hill-gold-low", "hill-pale-green", "hill-yellow", "hill-deep-blue", "hill-rust-mid", "hill-green-low", "hill-pale-green", "hill-paper-shadow", "hill-rust-mid"] },
-  { x: 48, y: 11650, fadeStartOffset: 2200, fadeLength: 1500, colorOrder: ["hill-pale-green", "hill-yellow", "hill-rust-mid", "hill-mist-blue", "hill-gold-low", "hill-rust-mid", "hill-deep-blue", "hill-green-low", "hill-yellow", "hill-paper-shadow", "hill-rust-mid"] },
-  { x: 120, y: 13950, fadeStartOffset: 2200, fadeLength: 1600, colorOrder: ["hill-pale-green", "hill-yellow", "hill-rust-mid", "hill-green-low", "hill-gold-low", "hill-mist-blue", "hill-deep-blue", "hill-rust-mid", "hill-pale-green", "hill-paper-shadow", "hill-rust-mid"] },
-  { x: 24, y: 16400, colorOrder: ["hill-blue-low", "hill-gold-low", "hill-rust-mid", "hill-mist-blue", "hill-yellow", "hill-pale-green", "hill-deep-blue", "hill-green-low", "hill-sage", "hill-paper-shadow", "hill-slate-low"] },
-  { x: -72, y: 18650, colorOrder: ["hill-deep-blue", "hill-paper-shadow", "hill-green-low", "hill-mist-blue", "hill-rust-mid", "hill-pale-green", "hill-gold-low", "hill-sage", "hill-blue-low", "hill-yellow", "hill-slate-low"] },
-  { x: 64, y: 23400, colorOrder: ["hill-gold-low", "hill-blue-low", "hill-sage", "hill-yellow", "hill-mist-blue", "hill-slate-low", "hill-paper-shadow", "hill-green-low", "hill-deep-blue", "hill-rust-mid", "hill-pale-green"] },
-  { x: -128, y: 28100, colorOrder: ["hill-sage", "hill-gold-low", "hill-rust-mid", "hill-pale-green", "hill-deep-blue", "hill-yellow", "hill-slate-low", "hill-paper-shadow", "hill-blue-low", "hill-mist-blue", "hill-green-low"] },
-  { x: 104, y: 32850, colorOrder: ["hill-paper-shadow", "hill-green-low", "hill-blue-low", "hill-rust-mid", "hill-pale-green", "hill-deep-blue", "hill-yellow", "hill-slate-low", "hill-gold-low", "hill-sage", "hill-mist-blue"] },
-  { x: -56, y: 37600, colorOrder: ["hill-blue-low", "hill-yellow", "hill-mist-blue", "hill-gold-low", "hill-sage", "hill-paper-shadow", "hill-green-low", "hill-rust-mid", "hill-pale-green", "hill-deep-blue", "hill-slate-low"] },
-  { x: 128, y: 42400, colorOrder: ["hill-green-low", "hill-rust-mid", "hill-paper-shadow", "hill-deep-blue", "hill-slate-low", "hill-pale-green", "hill-yellow", "hill-mist-blue", "hill-sage", "hill-gold-low", "hill-blue-low"] },
-  { x: 32, y: 44750, colorOrder: ["hill-yellow", "hill-pale-green", "hill-blue-low", "hill-rust-mid", "hill-mist-blue", "hill-green-low", "hill-deep-blue", "hill-gold-low", "hill-sage", "hill-paper-shadow", "hill-slate-low"] },
-  { x: -88, y: 47150, colorOrder: ["hill-pale-green", "hill-yellow", "hill-blue-low", "hill-rust-mid", "hill-gold-low", "hill-deep-blue", "hill-mist-blue", "hill-green-low", "hill-sage", "hill-paper-shadow", "hill-slate-low"] },
-  { x: 72, y: 51900, colorOrder: ["hill-mist-blue", "hill-rust-mid", "hill-green-low", "hill-paper-shadow", "hill-blue-low", "hill-yellow", "hill-deep-blue", "hill-pale-green", "hill-slate-low", "hill-gold-low", "hill-sage"] },
-  { x: -120, y: 56650, colorOrder: ["hill-yellow", "hill-deep-blue", "hill-paper-shadow", "hill-green-low", "hill-sage", "hill-blue-low", "hill-rust-mid", "hill-mist-blue", "hill-gold-low", "hill-pale-green", "hill-slate-low"] },
-  { x: 96, y: 61400, colorOrder: ["hill-pale-green", "hill-gold-low", "hill-rust-mid", "hill-mist-blue", "hill-yellow", "hill-deep-blue", "hill-green-low", "hill-blue-low", "hill-sage", "hill-paper-shadow", "hill-slate-low"] },
-  { x: -64, y: 66150, colorOrder: ["hill-rust-mid", "hill-blue-low", "hill-pale-green", "hill-gold-low", "hill-deep-blue", "hill-green-low", "hill-yellow", "hill-mist-blue", "hill-sage", "hill-paper-shadow", "hill-slate-low"] },
-  { x: 40, y: 68450, colorOrder: ["hill-mist-blue", "hill-yellow", "hill-rust-mid", "hill-pale-green", "hill-blue-low", "hill-gold-low", "hill-green-low", "hill-deep-blue", "hill-sage", "hill-paper-shadow", "hill-slate-low"] },
-  { x: 112, y: 70400, colorOrder: ["hill-deep-blue", "hill-yellow", "hill-green-low", "hill-mist-blue", "hill-rust-mid", "hill-blue-low", "hill-pale-green", "hill-gold-low", "hill-sage", "hill-paper-shadow", "hill-slate-low"] },
-  { x: -104, y: 72250, colorOrder: ["hill-pale-green", "hill-rust-mid", "hill-gold-low", "hill-mist-blue", "hill-yellow", "hill-deep-blue", "hill-green-low", "hill-blue-low", "hill-sage", "hill-paper-shadow", "hill-slate-low"] },
-  { x: -48, y: 74000, colorOrder: ["hill-paper-shadow", "hill-blue-low", "hill-sage", "hill-gold-low", "hill-pale-green", "hill-rust-mid", "hill-deep-blue", "hill-yellow", "hill-mist-blue", "hill-green-low", "hill-slate-low"] },
-];
-
-const MASK_X = LEFT_EDGE - 420;
-const MASK_WIDTH = RIGHT_EDGE - LEFT_EDGE + 840;
-const MASK_TOP_OFFSET = 900;
-const MASK_FADE_START_AFTER_NEXT = 250;
-const MASK_FADE_LENGTH = 2200;
-const percent = (value: number) => `${Math.max(0, Math.min(100, value)).toFixed(3)}%`;
-
-const buildHillPath = (hill: (typeof hillCurves)[number], repeatY: number) => {
-  const closeY = GLOBAL_CLOSE_Y - repeatY;
-
-  return [
-    `M${LEFT_EDGE} ${hill.startY}`,
-    `L${HILL_BASE_LEFT} ${hill.startY}`,
-    hill.curve,
-    `L${RIGHT_EDGE} ${hill.endY}`,
-    `L${RIGHT_EDGE} ${closeY}`,
-    `L${LEFT_EDGE} ${closeY}`,
-    "Z",
-  ].join(" ");
-};
-
-const getRepeatMask = (repeat: (typeof hillRepeats)[number], index: number) => {
-  const nextRepeat = hillRepeats[index + 1];
-  const isFinal = !nextRepeat;
-  const y = Math.max(0, repeat.y - MASK_TOP_OFFSET);
-  const fadeStart = isFinal
-    ? BACKGROUND_HEIGHT
-    : repeat.fadeStartOffset
-      ? repeat.y + repeat.fadeStartOffset
-      : nextRepeat.y + MASK_FADE_START_AFTER_NEXT;
-  const fadeLength = repeat.fadeLength || MASK_FADE_LENGTH;
-  const fadeEnd = isFinal ? BACKGROUND_HEIGHT : Math.min(BACKGROUND_HEIGHT, fadeStart + fadeLength);
-  const height = isFinal ? BACKGROUND_HEIGHT - y : fadeEnd - y;
-  const solidStop = height > 0 ? percent(((fadeStart - y) / height) * 100) : "100%";
-
-  return {
-    id: `hill-repeat-mask-${index}`,
-    isFinal,
-    y,
-    fadeStart,
-    fadeEnd,
-    height,
-    solidStop,
-  };
-};
----
-
-<div class="content-page-hills-background" aria-hidden="true">
-  <span class="atlas-paper-repeat"></span>
-  <svg
-    class="atlas-sheet"
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox={`0 0 1600 ${BACKGROUND_HEIGHT}`}
-    preserveAspectRatio="none"
-    focusable="false"
-  >
-    <defs>
-      <linearGradient id="paper-warmth" x1="0" x2="1" y1="0" y2="1">
-        <stop offset="0" class="gradient-stop-warm" />
-        <stop offset="0.44" class="gradient-stop-mid" />
-        <stop offset="1" class="gradient-stop-golden" />
-      </linearGradient>
-
-      {
-        hillRepeats.map((repeat, index) => {
-          const mask = getRepeatMask(repeat, index);
-
-          return (
-            <>
-              <linearGradient
-                id={`${mask.id}-fade`}
-                gradientUnits="userSpaceOnUse"
-                x1="0"
-                x2="0"
-                y1={mask.y}
-                y2={mask.fadeEnd}
-              >
-                <stop offset="0" stop-color="#fff" stop-opacity="1" />
-                <stop offset={mask.solidStop} stop-color="#fff" stop-opacity="1" />
-                <stop offset="100%" stop-color="#fff" stop-opacity={mask.isFinal ? "1" : "0"} />
-              </linearGradient>
-              <mask
-                id={mask.id}
-                maskUnits="userSpaceOnUse"
-                x={MASK_X}
-                y={mask.y}
-                width={MASK_WIDTH}
-                height={mask.height}
-              >
-                <rect x={MASK_X} y={mask.y} width={MASK_WIDTH} height={mask.height} fill={`url(#${mask.id}-fade)`} />
-              </mask>
-            </>
-          );
-        })
-      }
-    </defs>
-
-    <rect width="1600" height={BACKGROUND_HEIGHT} class="paper-base" />
-    <rect width="1600" height={BACKGROUND_HEIGHT} fill="url(#paper-warmth)" />
-
-    <g>
-      {
-        hillRepeats.map((repeat, repeatIndex) => (
-          <g mask={`url(#hill-repeat-mask-${repeatIndex})`}>
-            <g transform={`translate(${repeat.x} ${repeat.y})`}>
-              {hillCurves.map((hill, index) => (
-                <path
-                  class={`hill ${repeat.colorOrder[index] || hillClasses[index]}`}
-                  d={buildHillPath(hill, repeat.y)}
-                />
-              ))}
-            </g>
-          </g>
-        ))
-      }
-    </g>
-  </svg>
-  <span class="atlas-fiber"></span>
-</div>
+<div class="content-page-hills-background" aria-hidden="true"></div>
 
 <style>
   .content-page-hills-background {
-    --content-background-art-height: 78000px;
+    background-color: var(--color-bg-soft);
+    background-image:
+      linear-gradient(180deg, color-mix(in srgb, var(--color-bg-soft) 72%, var(--color-surface)), color-mix(in srgb, var(--color-accent-yellow) 13%, var(--color-bg-soft)));
     inset: 0;
-    min-height: var(--content-background-art-height);
     overflow: hidden;
     pointer-events: none;
     position: absolute;
     z-index: 0;
   }
 
-  .atlas-paper-repeat {
-    background:
-      linear-gradient(180deg, color-mix(in srgb, var(--color-bg-soft) 72%, var(--color-surface)), color-mix(in srgb, var(--color-accent-yellow) 13%, var(--color-bg-soft))),
-      radial-gradient(circle at 18% 24%, color-mix(in srgb, var(--color-text-subtle) 11%, transparent) 0 0.55px, transparent 0.75px),
-      radial-gradient(circle at 76% 58%, color-mix(in srgb, var(--color-bg-wash) 64%, transparent) 0 0.7px, transparent 1px);
-    background-size: auto, 19px 23px, 29px 31px;
+  .content-page-hills-background::before {
+    content: "";
     inset: 0;
     position: absolute;
-    z-index: 0;
   }
 
-  .atlas-sheet {
-    display: block;
-    height: var(--content-background-art-height);
-    position: relative;
-    width: 100%;
-    z-index: 1;
-  }
-
-  .paper-base {
-    fill: color-mix(in srgb, var(--color-bg-soft) 68%, var(--color-surface));
-  }
-
-  .gradient-stop-warm {
-    stop-color: color-mix(in srgb, var(--color-bg-soft) 72%, var(--color-surface));
-  }
-
-  .gradient-stop-mid {
-    stop-color: color-mix(in srgb, var(--color-bg-soft) 42%, transparent);
-  }
-
-  .gradient-stop-golden {
-    stop-color: color-mix(in srgb, var(--color-accent-yellow) 16%, var(--color-bg-soft));
-  }
-
-  .hill {
-    mix-blend-mode: normal;
-  }
-
-  .hill-mist-blue {
-    fill: #72c7c8;
+  .content-page-hills-background::before {
+    background-image:
+      image-set(
+        url("../assets/backgrounds/content-hills-light.avif") type("image/avif"),
+        url("../assets/backgrounds/content-hills-light.webp") type("image/webp")
+      );
+    background-position: top center;
+    background-repeat: repeat-y;
+    background-size: 100% auto;
     opacity: 0.58;
   }
 
-  .hill-paper-shadow {
-    fill: #e8bd55;
-    opacity: 0.56;
-  }
-
-  .hill-pale-green {
-    fill: #67c6aa;
-    opacity: 0.54;
-  }
-
-  .hill-sage {
-    fill: #c08aa8;
-    opacity: 0.46;
-  }
-
-  .hill-yellow {
-    fill: #d9954f;
-    opacity: 0.52;
-  }
-
-  .hill-rust-mid {
-    fill: #c47a69;
-    opacity: 0.5;
-  }
-
-  .hill-blue-low {
-    fill: #4f8fe6;
-    opacity: 0.38;
-  }
-
-  .hill-slate-low {
-    fill: #7a68dd;
-    opacity: 0.34;
-  }
-
-  .hill-green-low {
-    fill: #b0a147;
-    opacity: 0.52;
-  }
-
-  .hill-gold-low {
-    fill: #c4ae54;
-    opacity: 0.52;
-  }
-
-  .hill-deep-blue {
-    fill: #53699c;
-    opacity: 0.54;
-  }
-
-  .atlas-fiber {
+  :global([data-theme="dark"]) .content-page-hills-background::before {
     background-image:
-      radial-gradient(circle at 18% 24%, color-mix(in srgb, var(--color-text-subtle) 14%, transparent) 0 0.55px, transparent 0.75px),
-      radial-gradient(circle at 76% 58%, color-mix(in srgb, var(--color-bg-wash) 70%, transparent) 0 0.7px, transparent 1px),
-      linear-gradient(100deg, transparent 0 48%, color-mix(in srgb, var(--color-surface) 30%, transparent) 49% 51%, transparent 52% 100%);
-    background-size: 19px 23px, 29px 31px, 43px 47px;
-    inset: 0;
-    opacity: 0.09;
-    position: absolute;
-    z-index: 2;
-  }
-
-  :global([data-theme="dark"]) .content-page-hills-background {
-    opacity: 0.68;
-  }
-
-  :global([data-theme="dark"]) .hill-mist-blue {
-    fill: #0e3548;
+      image-set(
+        url("../assets/backgrounds/content-hills-dark.avif") type("image/avif"),
+        url("../assets/backgrounds/content-hills-dark.webp") type("image/webp")
+    );
     opacity: 0.72;
-  }
-
-  :global([data-theme="dark"]) .hill-paper-shadow {
-    fill: #4a310f;
-    opacity: 0.7;
-  }
-
-  :global([data-theme="dark"]) .hill-pale-green {
-    fill: #123c42;
-    opacity: 0.68;
-  }
-
-  :global([data-theme="dark"]) .hill-sage {
-    fill: #421f38;
-    opacity: 0.64;
-  }
-
-  :global([data-theme="dark"]) .hill-yellow {
-    fill: #442515;
-    opacity: 0.68;
-  }
-
-  :global([data-theme="dark"]) .hill-rust-mid {
-    fill: #4b1f1d;
-    opacity: 0.68;
-  }
-
-  :global([data-theme="dark"]) .hill-blue-low {
-    fill: #0d3547;
-    opacity: 0.72;
-  }
-
-  :global([data-theme="dark"]) .hill-slate-low {
-    fill: #242f55;
-    opacity: 0.66;
-  }
-
-  :global([data-theme="dark"]) .hill-green-low {
-    fill: #3c3812;
-    opacity: 0.68;
-  }
-
-  :global([data-theme="dark"]) .hill-gold-low {
-    fill: #4a4214;
-    opacity: 0.68;
-  }
-
-  :global([data-theme="dark"]) .hill-deep-blue {
-    fill: #121b36;
-    opacity: 0.74;
-  }
-
-  :global([data-theme="dark"]) .atlas-fiber {
-    opacity: 0.05;
   }
 </style>
