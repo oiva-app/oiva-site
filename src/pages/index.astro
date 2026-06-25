@@ -1,11 +1,10 @@
 ---
 import GeneralOivaWorkflow from "../components/GeneralOivaWorkflow.astro";
 import HomeHero from "../components/HomeHero.astro";
-import Video from "../components/Video.astro";
+import DemoVideo from "../components/DemoVideo.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { heroSubtext } from "../data/home";
 import { withBase } from "../lib/urls";
-import demoVideo from "../assets/video/oiva-demo.mp4";
 ---
 
 <BaseLayout title="Oiva" bareTitle description={heroSubtext}>
@@ -26,7 +25,7 @@ import demoVideo from "../assets/video/oiva-demo.mp4";
       <h2 id="home-demo-title">See Oiva In Action</h2>
       <p class="home-section__lead">A production alert arrives and starts an investigation workflow.</p>
       <div class="home-demo__media">
-        <Video src={demoVideo} />
+        <DemoVideo />
       </div>
     </div>
   </section>

@@ -1,0 +1,25 @@
+---
+type Props = {
+};
+import demoVideo from "../assets/video/oiva-demo.mp4";
+import demoPoster from "../assets/video/oiva-demo-poster.jpg";
+---
+
+<video
+  class="video"
+  src={demoVideo}
+  poster={demoPoster.src}
+  controls
+  playsinline
+  preload="none"
+>
+  Your browser does not support the video tag.
+</video>
+
+<style>
+  .video {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+</style>
