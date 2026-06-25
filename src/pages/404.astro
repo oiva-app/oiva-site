@@ -1,42 +1,372 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import bearCleanPng from "../assets/characters/404-bear-clean.png";
+import bearCleanWebp from "../assets/characters/404-bear-clean.webp";
 import { withBase } from "../lib/urls";
 ---
 
 <BaseLayout title="Page Not Found" description="The requested Oiva page could not be found.">
-  <section class="not-found">
-    <p class="eyebrow">404</p>
-    <h1>Page not found</h1>
-    <p>The page may have moved, or the route may not exist yet in this structural build.</p>
-    <div class="button-row">
-      <a class="button button-primary" href={withBase("/case-study/")}>Case Study</a>
-      <a class="button button-secondary" href={withBase("/get-started/manual-setup/")}>Get Started</a>
+  <section class="not-found-hero" aria-labelledby="not-found-title">
+    <div class="not-found-hero__background" aria-hidden="true"></div>
+    <picture class="not-found-hero__bear" aria-hidden="true">
+      <source srcset={bearCleanWebp.src} type="image/webp" />
+      <img
+        src={bearCleanPng.src}
+        width={bearCleanPng.width}
+        height={bearCleanPng.height}
+        alt=""
+        loading="eager"
+        decoding="async"
+      />
+    </picture>
+    <div class="not-found-hero__inner">
+      <div class="not-found-hero__content">
+        <p class="eyebrow">404</p>
+        <h1 id="not-found-title">Page not found</h1>
+        <p>Not all those who wander are lost, but you are.</p>
+        <div class="button-row not-found-hero__actions">
+          <a class="button button-primary" href={withBase("/case-study/")}>Case Study</a>
+          <a class="button button-secondary" href={withBase("/get-started/manual-setup/")}>Get Started</a>
+        </div>
+      </div>
     </div>
   </section>
 </BaseLayout>
 
 <style>
-  .not-found {
+  .not-found-hero {
+    align-items: center;
+    contain: paint;
+    display: flex;
+    isolation: isolate;
+    margin: 0;
+    min-height: calc(100svh - var(--header-height));
+    overflow: clip;
+    padding: clamp(var(--space-2xl), 8vw, var(--space-4xl)) var(--space-page);
+    position: relative;
+  }
+
+  .not-found-hero__background {
+    background-color: color-mix(in srgb, var(--color-bg-soft) 76%, var(--color-surface));
+    background-image:
+      linear-gradient(
+        90deg,
+        transparent 0%,
+        color-mix(in srgb, var(--color-bg) 18%, transparent) 44%,
+        color-mix(in srgb, var(--color-surface) 58%, transparent) 70%,
+        color-mix(in srgb, var(--color-surface) 78%, transparent) 100%
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--color-surface) 16%, transparent),
+        transparent 34%,
+        color-mix(in srgb, var(--color-bg) 20%, transparent) 100%
+      ),
+      url("../assets/backgrounds/404-forest-light.webp");
+    background-image:
+      linear-gradient(
+        90deg,
+        transparent 0%,
+        color-mix(in srgb, var(--color-bg) 18%, transparent) 44%,
+        color-mix(in srgb, var(--color-surface) 58%, transparent) 70%,
+        color-mix(in srgb, var(--color-surface) 78%, transparent) 100%
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--color-surface) 16%, transparent),
+        transparent 34%,
+        color-mix(in srgb, var(--color-bg) 20%, transparent) 100%
+      ),
+      image-set(
+        url("../assets/backgrounds/404-forest-light.avif") type("image/avif"),
+        url("../assets/backgrounds/404-forest-light.webp") type("image/webp")
+      );
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
+    z-index: -2;
+  }
+
+  .not-found-hero__background::after {
+    background:
+      radial-gradient(
+        ellipse at 18% 78%,
+        color-mix(in srgb, var(--color-primary) 12%, transparent) 0%,
+        transparent 34%
+      ),
+      linear-gradient(
+        180deg,
+        transparent 0%,
+        transparent 72%,
+        color-mix(in srgb, var(--color-bg) 32%, transparent) 100%
+      );
+    content: "";
+    inset: 0;
+    position: absolute;
+  }
+
+  :global([data-theme="dark"]) .not-found-hero__background {
+    background-color: var(--color-bg);
+    background-image:
+      linear-gradient(
+        90deg,
+        rgba(6, 23, 22, 0.12) 0%,
+        rgba(6, 23, 22, 0.34) 48%,
+        rgba(6, 23, 22, 0.62) 74%,
+        rgba(6, 23, 22, 0.8) 100%
+      ),
+      linear-gradient(
+        180deg,
+        rgba(6, 23, 22, 0.1),
+        transparent 40%,
+        rgba(6, 23, 22, 0.34) 100%
+      ),
+      url("../assets/backgrounds/404-forest-dark.webp");
+    background-image:
+      linear-gradient(
+        90deg,
+        rgba(6, 23, 22, 0.12) 0%,
+        rgba(6, 23, 22, 0.34) 48%,
+        rgba(6, 23, 22, 0.62) 74%,
+        rgba(6, 23, 22, 0.8) 100%
+      ),
+      linear-gradient(
+        180deg,
+        rgba(6, 23, 22, 0.1),
+        transparent 40%,
+        rgba(6, 23, 22, 0.34) 100%
+      ),
+      image-set(
+        url("../assets/backgrounds/404-forest-dark.avif") type("image/avif"),
+        url("../assets/backgrounds/404-forest-dark.webp") type("image/webp")
+      );
+  }
+
+  :global([data-theme="dark"]) .not-found-hero__background::after {
+    background:
+      radial-gradient(
+        ellipse at 22% 78%,
+        rgba(166, 199, 160, 0.12) 0%,
+        transparent 36%
+      ),
+      linear-gradient(
+        180deg,
+        transparent 0%,
+        transparent 68%,
+        rgba(6, 23, 22, 0.5) 100%
+      );
+  }
+
+  .not-found-hero__inner {
     margin: 0 auto;
-    max-width: 720px;
-    padding: var(--space-section) var(--space-page) 0;
-    text-align: center;
+    max-width: var(--container-wide);
+    position: relative;
+    width: 100%;
+    z-index: 1;
+  }
+
+  .not-found-hero__content {
+    margin-left: auto;
+    max-width: 32rem;
+    position: relative;
+    text-align: left;
+    text-shadow: 0 1px 22px color-mix(in srgb, var(--color-surface) 78%, transparent);
+  }
+
+  :global([data-theme="dark"]) .not-found-hero__content {
+    text-shadow: 0 1px 24px rgba(0, 0, 0, 0.52);
+  }
+
+  .not-found-hero__bear {
+    bottom: clamp(-2.4rem, -3vw, -1rem);
+    display: block;
+    left: max(-7rem, -6vw);
+    pointer-events: none;
+    position: absolute;
+    width: clamp(24rem, 47vw, 45rem);
+    z-index: 0;
+  }
+
+  .not-found-hero__bear img {
+    display: block;
+    height: auto;
+    width: 100%;
+  }
+
+  .not-found-hero__bear::after {
+    background: radial-gradient(
+      ellipse,
+      rgba(31, 74, 67, 0.22) 0%,
+      rgba(31, 74, 67, 0.12) 34%,
+      transparent 70%
+    );
+    bottom: 1.2rem;
+    content: "";
+    height: 14%;
+    left: 10%;
+    position: absolute;
+    width: 72%;
+    z-index: -1;
+  }
+
+  :global([data-theme="dark"]) .not-found-hero__bear {
+    filter: drop-shadow(0 24px 38px rgba(0, 0, 0, 0.26));
+  }
+
+  :global([data-theme="dark"]) .not-found-hero__bear::after {
+    background: radial-gradient(
+      ellipse,
+      rgba(0, 0, 0, 0.32) 0%,
+      rgba(0, 0, 0, 0.18) 38%,
+      transparent 72%
+    );
   }
 
   h1 {
-    font-size: clamp(2.6rem, 7vw, 5rem);
+    color: var(--color-text);
+    font-size: clamp(2.7rem, 7vw, 5.4rem);
     line-height: 1;
     margin: 0;
+    text-wrap: balance;
   }
 
   p:not(.eyebrow) {
     color: var(--color-muted);
     font-size: 1.15rem;
     line-height: 1.6;
-    margin: 1rem auto 1.5rem;
+    margin: 1rem 0 1.5rem;
+    max-width: 30rem;
   }
 
-  .button-row {
-    justify-content: center;
+  .not-found-hero__actions {
+    justify-content: flex-start;
+  }
+
+  .not-found-hero__actions .button {
+    background-clip: padding-box;
+  }
+
+  .not-found-hero__actions .button-secondary {
+    background: color-mix(in srgb, var(--color-surface-raised) 86%, transparent);
+    backdrop-filter: blur(8px);
+  }
+
+  @media (max-width: 920px) {
+    .not-found-hero {
+      align-items: start;
+      min-height: calc(100svh - var(--header-height));
+      padding-block: var(--space-2xl) min(34vh, 14rem);
+    }
+
+    .not-found-hero__background {
+      background-position: 34% center;
+    }
+
+    .not-found-hero__content {
+      max-width: 28rem;
+      width: min(100%, 28rem);
+    }
+
+    .not-found-hero__bear {
+      bottom: -1.6rem;
+      left: -5.8rem;
+      width: min(86vw, 35rem);
+    }
+  }
+
+  @media (max-width: 620px) {
+    .not-found-hero {
+      min-height: calc(100svh - var(--header-height));
+      padding-block: var(--space-xl) min(30vh, 10rem);
+    }
+
+    .not-found-hero__background {
+      background-image:
+        linear-gradient(
+          180deg,
+          color-mix(in srgb, var(--color-surface) 88%, transparent) 0%,
+          color-mix(in srgb, var(--color-surface) 72%, transparent) 34%,
+          transparent 70%
+        ),
+        linear-gradient(
+          90deg,
+          color-mix(in srgb, var(--color-bg) 20%, transparent),
+          color-mix(in srgb, var(--color-surface) 42%, transparent)
+        ),
+        url("../assets/backgrounds/404-forest-light.webp");
+      background-image:
+        linear-gradient(
+          180deg,
+          color-mix(in srgb, var(--color-surface) 88%, transparent) 0%,
+          color-mix(in srgb, var(--color-surface) 72%, transparent) 34%,
+          transparent 70%
+        ),
+        linear-gradient(
+          90deg,
+          color-mix(in srgb, var(--color-bg) 20%, transparent),
+          color-mix(in srgb, var(--color-surface) 42%, transparent)
+        ),
+        image-set(
+          url("../assets/backgrounds/404-forest-light.avif") type("image/avif"),
+          url("../assets/backgrounds/404-forest-light.webp") type("image/webp")
+        );
+      background-position: 34% center;
+    }
+
+    :global([data-theme="dark"]) .not-found-hero__background {
+      background-image:
+        linear-gradient(
+          180deg,
+          rgba(6, 23, 22, 0.86) 0%,
+          rgba(6, 23, 22, 0.7) 38%,
+          rgba(6, 23, 22, 0.08) 74%
+        ),
+        linear-gradient(
+          90deg,
+          rgba(6, 23, 22, 0.18),
+          rgba(6, 23, 22, 0.44)
+        ),
+        url("../assets/backgrounds/404-forest-dark.webp");
+      background-image:
+        linear-gradient(
+          180deg,
+          rgba(6, 23, 22, 0.86) 0%,
+          rgba(6, 23, 22, 0.7) 38%,
+          rgba(6, 23, 22, 0.08) 74%
+        ),
+        linear-gradient(
+          90deg,
+          rgba(6, 23, 22, 0.18),
+          rgba(6, 23, 22, 0.44)
+        ),
+        image-set(
+          url("../assets/backgrounds/404-forest-dark.avif") type("image/avif"),
+          url("../assets/backgrounds/404-forest-dark.webp") type("image/webp")
+        );
+    }
+
+    .not-found-hero__content {
+      margin-left: 0;
+    }
+
+    .not-found-hero__actions {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .not-found-hero__bear {
+      bottom: auto;
+      left: -4.8rem;
+      top: 27rem;
+      width: min(94vw, 28rem);
+      z-index: 1;
+    }
+
+    .not-found-hero__inner {
+      z-index: 2;
+    }
   }
 </style>

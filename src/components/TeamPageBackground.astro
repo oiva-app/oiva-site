@@ -1,58 +1,17 @@
-<div class="team-page-background" aria-hidden="true">
-  <svg
-    class="atlas-sheet"
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 1600 900"
-    preserveAspectRatio="none"
-    focusable="false"
-  >
-    <defs>
-      <filter id="team-watercolor-edge" x="-4%" y="-4%" width="108%" height="108%">
-        <feTurbulence
-          type="fractalNoise"
-          baseFrequency="0.009 0.024"
-          numOctaves="3"
-          seed="17"
-          result="edgeNoise"
-        />
-        <feDisplacementMap in="SourceGraphic" in2="edgeNoise" scale="9" xChannelSelector="R" yChannelSelector="G" />
-        <feGaussianBlur stdDeviation="0.5" />
-      </filter>
-
-      <linearGradient id="team-paper-warmth" x1="0" x2="1" y1="0" y2="1">
-        <stop offset="0" class="gradient-stop-warm" />
-        <stop offset="0.44" class="gradient-stop-mid" />
-        <stop offset="1" class="gradient-stop-golden" />
-      </linearGradient>
-    </defs>
-
-    <rect width="1600" height="900" class="paper-base" />
-    <rect width="1600" height="900" fill="url(#team-paper-warmth)" />
-
-    <g filter="url(#team-watercolor-edge)">
-      <path
-        class="hill hill-mist-blue"
-        d="M-80 230 C110 295 300 335 530 265 C750 200 900 185 1110 215 C1300 242 1480 290 1680 240 L1680 900 L-80 900 Z"
-      />
-      <path
-        class="hill hill-paper-shadow"
-        d="M-80 390 C60 335 210 355 410 430 C575 498 720 548 950 478 C1140 420 1320 358 1530 410 C1608 432 1655 460 1680 488 L1680 900 L-80 900 Z"
-      />
-      <path
-        class="hill hill-pale-green"
-        d="M-80 580 C88 618 248 595 438 510 C624 430 762 508 970 608 C1148 694 1300 650 1478 558 C1574 508 1642 544 1680 578 L1680 900 L-80 900 Z"
-      />
-      <path
-        class="hill hill-sage-green"
-        d="M-80 728 C72 768 228 752 420 682 C606 616 748 690 958 774 C1140 848 1302 816 1484 738 C1578 696 1644 724 1680 754 L1680 900 L-80 900 Z"
-      />
-    </g>
-  </svg>
-  <span class="atlas-fiber"></span>
-</div>
+<div class="team-page-background" aria-hidden="true"></div>
 
 <style>
   .team-page-background {
+    background-color: var(--color-bg-soft);
+    background-image: url("../assets/backgrounds/team-hills-light.webp");
+    background-image:
+      image-set(
+        url("../assets/backgrounds/team-hills-light.avif") type("image/avif"),
+        url("../assets/backgrounds/team-hills-light.webp") type("image/webp")
+      );
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
     height: 100%;
     inset: 0;
     overflow: hidden;
@@ -62,88 +21,13 @@
     z-index: 0;
   }
 
-  .atlas-sheet {
-    display: block;
-    height: 100%;
-    width: 100%;
-  }
-
-  .paper-base {
-    fill: color-mix(in srgb, var(--color-bg-soft) 68%, var(--color-surface));
-  }
-
-  .gradient-stop-warm {
-    stop-color: color-mix(in srgb, var(--color-bg-soft) 72%, var(--color-surface));
-  }
-
-  .gradient-stop-mid {
-    stop-color: color-mix(in srgb, var(--color-bg-soft) 42%, transparent);
-  }
-
-  .gradient-stop-golden {
-    stop-color: color-mix(in srgb, var(--color-accent-yellow) 16%, var(--color-bg-soft));
-  }
-
-  .hill {
-    mix-blend-mode: normal;
-  }
-
-  .hill-mist-blue {
-    fill: #a8c9d5;
-    opacity: 0.52;
-  }
-
-  .hill-paper-shadow {
-    fill: #e8bd55;
-    opacity: 0.54;
-  }
-
-  .hill-pale-green {
-    fill: #72b0bd;
-    opacity: 0.48;
-  }
-
-  .hill-sage-green {
-    fill: #7aad8a;
-    opacity: 0.52;
-  }
-
-  .atlas-fiber {
-    background-image:
-      radial-gradient(circle at 18% 24%, color-mix(in srgb, var(--color-text-subtle) 14%, transparent) 0 0.55px, transparent 0.75px),
-      radial-gradient(circle at 76% 58%, color-mix(in srgb, var(--color-bg-wash) 70%, transparent) 0 0.7px, transparent 1px),
-      linear-gradient(100deg, transparent 0 48%, color-mix(in srgb, var(--color-surface) 30%, transparent) 49% 51%, transparent 52% 100%);
-    background-size: 19px 23px, 29px 31px, 43px 47px;
-    inset: 0;
-    opacity: 0.09;
-    position: absolute;
-  }
-
   :global([data-theme="dark"]) .team-page-background {
-    opacity: 0.68;
-  }
-
-  :global([data-theme="dark"]) .hill-mist-blue {
-    fill: #0f303c;
-    opacity: 0.72;
-  }
-
-  :global([data-theme="dark"]) .hill-paper-shadow {
-    fill: #4a310f;
-    opacity: 0.70;
-  }
-
-  :global([data-theme="dark"]) .hill-pale-green {
-    fill: #16284b;
-    opacity: 0.68;
-  }
-
-  :global([data-theme="dark"]) .hill-sage-green {
-    fill: #1a3528;
-    opacity: 0.72;
-  }
-
-  :global([data-theme="dark"]) .atlas-fiber {
-    opacity: 0.05;
+    background-color: var(--color-bg);
+    background-image: url("../assets/backgrounds/team-hills-dark.webp");
+    background-image:
+      image-set(
+        url("../assets/backgrounds/team-hills-dark.avif") type("image/avif"),
+        url("../assets/backgrounds/team-hills-dark.webp") type("image/webp")
+      );
   }
 </style>
