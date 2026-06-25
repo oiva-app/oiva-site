@@ -70,7 +70,7 @@ export default function Figure({
           zoom={{
             scrollToZoom: true,
             maxZoomPixelRatio: 3,
-            wheelZoomDistanceFactor: 0.8,
+            wheelZoomDistanceFactor: 0.7,
           }}
           close={() => setVisible(false)}
           // Only supports a single slide!
@@ -81,7 +81,7 @@ export default function Figure({
             buttonNext: () => null,
           }}
           carousel={{ padding: 0, spacing: 0 }}
-          controller={{ closeOnBackdropClick: true }}
+          controller={{ closeOnBackdropClick: true, disableSwipeNavigation: true }}
           styles={{
             container: {
               background: "var(--color-surface)",
