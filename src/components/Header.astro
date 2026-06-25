@@ -38,6 +38,10 @@ function getHeadingHref(page: SectionPage, slug: string) {
   const [pagePath] = page.href.split("#");
   return `${pagePath}#${slug}`;
 }
+
+function hasMobilePageToggle(page: SectionPage) {
+  return section === "caseStudy" && page.headings.length > 0;
+}
 ---
 
 <header class="site-header">
@@ -132,13 +136,36 @@ function getHeadingHref(page: SectionPage, slug: string) {
         <p>{sectionTitle}</p>
         {sectionPages.map((page) => (
           <div class="mobile-page-nav-item" data-page-id={page.id}>
-            <a
-              href={page.href}
-              aria-current={page.id === currentPageId ? "page" : undefined}
-              data-section-page-link
-            >
-              {page.label}
-            </a>
+            {hasMobilePageToggle(page) ? (
+              <div class="mobile-page-link-row">
+                <a
+                  href={page.href}
+                  aria-current={page.id === currentPageId ? "page" : undefined}
+                  data-section-page-link
+                >
+                  {page.label}
+                </a>
+                <button
+                  class="mobile-page-toggle"
+                  type="button"
+                  aria-expanded={page.id === currentPageId ? "true" : "false"}
+                  aria-label={`Toggle ${page.label} subsections`}
+                  data-section-toggle
+                >
+                  <svg aria-hidden="true" viewBox="0 0 16 16">
+                    <path d="M6 4l4 4-4 4"></path>
+                  </svg>
+                </button>
+              </div>
+            ) : (
+              <a
+                href={page.href}
+                aria-current={page.id === currentPageId ? "page" : undefined}
+                data-section-page-link
+              >
+                {page.label}
+              </a>
+            )}
             {page.headings.length > 0 && (
               <div
                 class="mobile-page-headings"
@@ -535,6 +562,14 @@ function getHeadingHref(page: SectionPage, slug: string) {
     min-width: 0;
   }
 
+  .mobile-page-link-row {
+    align-items: center;
+    display: grid;
+    gap: var(--space-2xs);
+    grid-template-columns: minmax(0, 1fr) 1.75rem;
+    min-width: 0;
+  }
+
   .mobile-page-headings {
     display: grid;
     gap: var(--space-2xs);
@@ -586,6 +621,7 @@ function getHeadingHref(page: SectionPage, slug: string) {
     grid-template-columns: minmax(0, 1fr) 1.75rem;
   }
 
+  .mobile-page-toggle,
   .mobile-heading-toggle {
     align-items: center;
     appearance: none;
@@ -601,11 +637,13 @@ function getHeadingHref(page: SectionPage, slug: string) {
     width: 1.75rem;
   }
 
+  .mobile-page-toggle:hover,
   .mobile-heading-toggle:hover {
     background: var(--color-primary-soft);
     color: var(--color-text);
   }
 
+  .mobile-page-toggle svg,
   .mobile-heading-toggle svg {
     fill: none;
     height: 0.875rem;
@@ -617,6 +655,7 @@ function getHeadingHref(page: SectionPage, slug: string) {
     width: 0.875rem;
   }
 
+  .mobile-page-toggle[aria-expanded="true"] svg,
   .mobile-heading-toggle[aria-expanded="true"] svg {
     transform: rotate(90deg);
   }

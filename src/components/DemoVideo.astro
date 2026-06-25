@@ -5,21 +5,108 @@ import demoVideo from "../assets/video/oiva-demo.mp4";
 import demoPoster from "../assets/video/oiva-demo-poster.jpg";
 ---
 
-<video
-  class="video"
-  src={demoVideo}
-  poster={demoPoster.src}
-  controls
-  playsinline
-  preload="none"
->
-  Your browser does not support the video tag.
-</video>
+<div class="demo-video" data-demo-video>
+  <video
+    class="video"
+    src={demoVideo}
+    poster={demoPoster.src}
+    controls
+    playsinline
+    preload="none"
+    tabindex="0"
+  >
+    Your browser does not support the video tag.
+  </video>
+
+  <button class="demo-video__play" type="button" aria-label="Play demo video" data-demo-video-play>
+    <svg aria-hidden="true" viewBox="0 0 24 24">
+      <path d="M8 5v14l11-7z"></path>
+    </svg>
+  </button>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-demo-video]").forEach((wrapper) => {
+    const video = wrapper.querySelector<HTMLVideoElement>("video");
+    const playButton = wrapper.querySelector<HTMLButtonElement>("[data-demo-video-play]");
+
+    if (!video || !playButton || wrapper.dataset.demoVideoReady === "true") {
+      return;
+    }
+
+    wrapper.dataset.demoVideoReady = "true";
+
+    video.addEventListener("play", () => {
+      wrapper.dataset.hasPlayed = "true";
+    });
+
+    playButton.addEventListener("click", () => {
+      video.focus();
+      void video.play();
+    });
+  });
+</script>
 
 <style>
+  .demo-video {
+    position: relative;
+  }
+
   .video {
     display: block;
     width: 100%;
     height: auto;
+  }
+
+  .demo-video__play {
+    align-items: center;
+    backdrop-filter: blur(12px);
+    background: color-mix(in srgb, var(--color-surface-raised) 78%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-border) 72%, transparent);
+    border-radius: 999px;
+    box-shadow: 0 1.25rem 3rem rgb(0 0 0 / 34%);
+    color: var(--color-text);
+    cursor: pointer;
+    display: inline-flex;
+    height: clamp(4rem, 10vw, 5.75rem);
+    inset: 50% auto auto 50%;
+    justify-content: center;
+    padding: 0;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    transition:
+      background-color 160ms ease,
+      border-color 160ms ease,
+      box-shadow 160ms ease,
+      opacity 160ms ease,
+      transform 160ms ease,
+      visibility 160ms ease;
+    width: clamp(4rem, 10vw, 5.75rem);
+    z-index: 1;
+  }
+
+  .demo-video__play:hover {
+    background: color-mix(in srgb, var(--color-surface-raised) 90%, transparent);
+    border-color: color-mix(in srgb, var(--color-accent-green) 68%, var(--color-border));
+    transform: translate(-50%, -50%) scale(1.04);
+  }
+
+  .demo-video__play:focus-visible {
+    outline: 3px solid var(--color-accent-green);
+    outline-offset: 4px;
+  }
+
+  .demo-video__play svg {
+    display: block;
+    fill: currentColor;
+    height: 42%;
+    margin-left: 6%;
+    width: 42%;
+  }
+
+  .demo-video[data-has-played="true"] .demo-video__play {
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
   }
 </style>
