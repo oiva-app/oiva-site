@@ -1,6 +1,6 @@
 import type { ImageMetadata } from "astro";
 import jonathanHeadshot from "../assets/team/jonathan-mcnair.png";
-import stevenHeadshot from "../assets/team/steven-valenziano.png";
+import stevenHeadshot from "../assets/team/steven-valenziano.jpeg";
 import tiiaHeadshot from "../assets/team/tiia-rikama.png";
 import valerieHeadshot from "../assets/team/valerie-racine.png";
 
